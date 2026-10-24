@@ -9,29 +9,24 @@ import { FoodCultureSection } from './features/food/FoodCultureSection';
 import { FestivalsSection } from './features/festivals/FestivalsSection';
 import { BlogSection } from './features/blog/BlogSection';
 import { TripPlannerSection } from './features/trips/TripPlannerSection';
-import { Destination, Place, Festival, BlogPost, Trip, User } from './types';
 import { api } from './services/api';
-import { Shield, CheckCircle2, AlertCircle } from 'lucide-react';
 
-export const App: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<string>('destinations');
+export const App = () => {
+  const [activeTab, setActiveTab] = useState('destinations');
   
   // Data states
-  const [destinations, setDestinations] = useState<Destination[]>([]);
-  const [places, setPlaces] = useState<Place[]>([]);
-  const [festivals, setFestivals] = useState<Festival[]>([]);
-  const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
-  const [trips, setTrips] = useState<Trip[]>([]);
-  const [favorites, setFavorites] = useState<string[]>([]);
-  const [user, setUser] = useState<User | null>(null);
+  const [destinations, setDestinations] = useState([]);
+  const [places, setPlaces] = useState([]);
+  const [festivals, setFestivals] = useState([]);
+  const [blogPosts, setBlogPosts] = useState([]);
+  const [trips, setTrips] = useState([]);
+  const [favorites, setFavorites] = useState([]);
+  const [user, setUser] = useState(null);
 
   // Modals
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-  const [selectedPlaceModal, setSelectedPlaceModal] = useState<Place | null>(null);
-  const [mapTargetPlace, setMapTargetPlace] = useState<Place | null>(null);
-
-  // Admin moderation
-  const [pendingArticles, setPendingArticles] = useState<BlogPost[]>([]);
+  const [selectedPlaceModal, setSelectedPlaceModal] = useState(null);
+  const [mapTargetPlace, setMapTargetPlace] = useState(null);
 
   useEffect(() => {
     loadInitialData();
@@ -82,7 +77,7 @@ export const App: React.FC = () => {
     }
   };
 
-  const handleToggleFavorite = async (placeId: string) => {
+  const handleToggleFavorite = async (placeId) => {
     if (!user) {
       setIsAuthModalOpen(true);
       return;
@@ -116,7 +111,7 @@ export const App: React.FC = () => {
     }
   };
 
-  const handleViewOnMap = (place: Place) => {
+  const handleViewOnMap = (place) => {
     setMapTargetPlace(place);
     setActiveTab('map');
   };
@@ -166,10 +161,14 @@ export const App: React.FC = () => {
 
         {activeTab === 'map' && (
           <div className="space-y-4 animate-in fade-in duration-300">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
               <div>
-                <h2 className="text-2xl font-serif font-bold text-white">Interactive Odisha Trail Map</h2>
-                <p className="text-xs text-stone-400">Click any colored marker to view entry hours, tickets, and place details</p>
+                <h2 className="text-2xl sm:text-3xl font-serif font-bold text-white flex items-center gap-2">
+                  <span>✨</span> Golden Map of India
+                </h2>
+                <p className="text-xs text-amber-300/80">
+                  Featuring illuminated golden sovereign borders & curated trails across all Indian states
+                </p>
               </div>
             </div>
             <MapView

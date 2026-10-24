@@ -1,17 +1,7 @@
 import React from 'react';
-import { Compass, MapPin, Utensils, Sparkles, BookOpen, Calendar, Heart, Shield, LogIn, LogOut, User as UserIcon } from 'lucide-react';
-import { User } from '../types';
+import { Compass, MapPin, Utensils, Sparkles, BookOpen, Calendar, Heart, Shield, LogIn, LogOut } from 'lucide-react';
 
-interface NavbarProps {
-  activeTab: string;
-  setActiveTab: (tab: string) => void;
-  user: User | null;
-  onOpenAuth: () => void;
-  onLogout: () => void;
-  favoritesCount: number;
-}
-
-export const Navbar: React.FC<NavbarProps> = ({
+export const Navbar = ({
   activeTab,
   setActiveTab,
   user,
@@ -23,22 +13,22 @@ export const Navbar: React.FC<NavbarProps> = ({
     { id: 'destinations', label: 'Destinations', icon: Compass },
     { id: 'food', label: 'Food & Culture', icon: Utensils },
     { id: 'festivals', label: 'Festivals', icon: Sparkles },
-    { id: 'map', label: 'Trail Map', icon: MapPin },
-    { id: 'blog', label: 'Travel Blog', icon: BookOpen },
+    { id: 'map', label: 'Golden Map of India', icon: MapPin },
+    { id: 'blog', label: 'Travel Chronicles', icon: BookOpen },
     { id: 'planner', label: 'Trip Planner', icon: Calendar },
   ];
 
   return (
-    <header className="sticky top-0 z-40 bg-stone-900/90 backdrop-blur-md border-b border-stone-800 text-stone-100 transition-all">
+    <header className="sticky top-0 z-40 bg-stone-900/90 backdrop-blur-md border-b border-amber-500/20 text-stone-100 transition-all">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
           
-          {/* Logo & Brand */}
+          {/* Logo & Pan-India Brand */}
           <div 
             onClick={() => setActiveTab('destinations')}
             className="flex items-center gap-3 cursor-pointer group"
           >
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-tr from-amber-600 to-orange-500 flex items-center justify-center shadow-lg shadow-orange-900/30 group-hover:scale-105 transition-transform">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-tr from-amber-600 via-orange-500 to-amber-400 flex items-center justify-center shadow-lg shadow-amber-900/40 group-hover:scale-105 transition-transform border border-amber-300/40">
               <span className="text-2xl select-none">🛕</span>
             </div>
             <div>
@@ -46,8 +36,8 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <span className="text-2xl font-bold tracking-tight font-serif text-white">
                   Trail India
                 </span>
-                <span className="text-[10px] font-semibold uppercase tracking-wider bg-amber-500/20 text-amber-400 border border-amber-500/30 px-2 py-0.5 rounded-full">
-                  Odisha Edition
+                <span className="text-[10px] font-semibold uppercase tracking-wider bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-300 border border-amber-500/40 px-2 py-0.5 rounded-full flex items-center gap-1">
+                  <span>🇮🇳</span> Whole India
                 </span>
               </div>
               <p className="text-xs text-stone-400 font-medium">Discover India, One Trail at a Time</p>

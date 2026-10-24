@@ -1,22 +1,14 @@
 import React, { useState } from 'react';
-import { BlogPost, User } from '../../types';
 import { api } from '../../services/api';
-import { BookOpen, PenTool, Bookmark, Eye, Clock, User as UserIcon, Tag, Share2, CheckCircle2, AlertCircle, X } from 'lucide-react';
+import { PenTool, Bookmark, Eye, Clock, Tag, CheckCircle2, AlertCircle, X } from 'lucide-react';
 
-interface BlogSectionProps {
-  posts: BlogPost[];
-  user: User | null;
-  onOpenAuth: () => void;
-  onRefreshPosts: () => void;
-}
-
-export const BlogSection: React.FC<BlogSectionProps> = ({
+export const BlogSection = ({
   posts,
   user,
   onOpenAuth,
   onRefreshPosts,
 }) => {
-  const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null);
+  const [selectedPost, setSelectedPost] = useState(null);
   const [isEditorOpen, setIsEditorOpen] = useState(false);
   const [activeCategory, setActiveCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -25,11 +17,11 @@ export const BlogSection: React.FC<BlogSectionProps> = ({
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState('Travel Guides');
   const [excerpt, setExcerpt] = useState('');
-  const [coverImage, setCoverImage] = useState('https://images.unsplash.com/photo-1609137144813-7d9921338f24?auto=format&fit=crop&w=1200&q=80');
+  const [coverImage, setCoverImage] = useState('https://images.unsplash.com/photo-1603288967527-2c13d705d15c?auto=format&fit=crop&w=1200&q=80');
   const [content, setContent] = useState('');
-  const [tagsInput, setTagsInput] = useState('Odisha, Heritage, Travel');
+  const [tagsInput, setTagsInput] = useState('India, Heritage, Road Trip');
   const [submitting, setSubmitting] = useState(false);
-  const [editorMsg, setEditorMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [editorMsg, setEditorMsg] = useState(null);
 
   const categories = ['all', 'Travel Guides', 'Food & Culture', 'Eco Tourism', 'Heritage & Crafts'];
 
@@ -50,7 +42,7 @@ export const BlogSection: React.FC<BlogSectionProps> = ({
     setEditorMsg(null);
   };
 
-  const handleCreatePost = async (status: 'draft' | 'pending_review' | 'published') => {
+  const handleCreatePost = async (status) => {
     if (!title.trim() || !content.trim()) {
       setEditorMsg({ type: 'error', text: 'Title and content cannot be blank.' });
       return;
@@ -85,14 +77,14 @@ export const BlogSection: React.FC<BlogSectionProps> = ({
         setExcerpt('');
         onRefreshPosts();
       }, 1500);
-    } catch (err: any) {
+    } catch (err) {
       setEditorMsg({ type: 'error', text: err.message || 'Failed to create article' });
     } finally {
       setSubmitting(false);
     }
   };
 
-  const handleBookmark = async (post: BlogPost, e: React.MouseEvent) => {
+  const handleBookmark = async (post, e) => {
     e.stopPropagation();
     if (!user) {
       onOpenAuth();
@@ -113,13 +105,13 @@ export const BlogSection: React.FC<BlogSectionProps> = ({
       <div className="bg-gradient-to-r from-stone-900 via-stone-800 to-amber-950/60 p-8 sm:p-12 rounded-3xl border border-stone-800 relative overflow-hidden text-stone-100 shadow-xl">
         <div className="max-w-2xl relative z-10 space-y-4">
           <span className="text-xs font-bold uppercase tracking-widest text-amber-400 bg-amber-500/10 border border-amber-500/20 px-3.5 py-1.5 rounded-full inline-block">
-            ✍️ Public Travel Chronicles
+            ✍️ Public Travel Chronicles Across India
           </span>
           <h2 className="text-3xl sm:text-5xl font-serif font-bold text-white leading-tight">
-            Stories from the Sacred Coast & Misty Highlands
+            Stories from the Sacred Ghats, Desert Forts & Cloud Forests
           </h2>
           <p className="text-stone-300 text-sm sm:text-base leading-relaxed">
-            Read first-hand travel accounts, regional food trails, conservation stories, and comprehensive itineraries penned by local explorers and contributors.
+            Read first-hand travel accounts, regional food trails, conservation stories, and comprehensive itineraries penned by local explorers and contributors across Indian states.
           </p>
 
           <div className="pt-2 flex flex-wrap items-center gap-3">
@@ -317,8 +309,8 @@ export const BlogSection: React.FC<BlogSectionProps> = ({
 
             <div className="mb-6">
               <span className="text-xs uppercase font-bold text-amber-400">Contributor Workspace</span>
-              <h3 className="text-2xl font-serif font-bold text-white mt-1">Publish a Travel Article</h3>
-              <p className="text-xs text-stone-400">Share your recommendations, itineraries, or cultural narratives with the Trail India community.</p>
+              <h3 className="text-2xl font-serif font-bold text-white mt-1">Publish a Travel Story</h3>
+              <p className="text-xs text-stone-400">Share your recommendations, itineraries, or cultural narratives across India.</p>
             </div>
 
             {editorMsg && (
@@ -337,7 +329,7 @@ export const BlogSection: React.FC<BlogSectionProps> = ({
                 <label className="block text-xs font-medium text-stone-300 mb-1">Article Title</label>
                 <input
                   type="text"
-                  placeholder="e.g., Hidden Waterfalls of Koraput: A Weekend Guide"
+                  placeholder="e.g., Hidden Waterfalls of the Western Ghats: A Monsoon Trail"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   className="w-full bg-stone-950 border border-stone-700 rounded-xl px-4 py-2.5 text-sm text-stone-100 focus:outline-none focus:border-amber-500"
@@ -396,7 +388,7 @@ export const BlogSection: React.FC<BlogSectionProps> = ({
                 <label className="block text-xs font-medium text-stone-300 mb-1">Tags (Comma-separated)</label>
                 <input
                   type="text"
-                  placeholder="Odisha, Waterfalls, Weekend Trip"
+                  placeholder="India, Monsoon, Trekking, Heritage"
                   value={tagsInput}
                   onChange={(e) => setTagsInput(e.target.value)}
                   className="w-full bg-stone-950 border border-stone-700 rounded-xl px-4 py-2.5 text-sm text-stone-100 focus:outline-none focus:border-amber-500"

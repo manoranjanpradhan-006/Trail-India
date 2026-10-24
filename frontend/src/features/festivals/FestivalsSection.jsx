@@ -1,16 +1,10 @@
 import React, { useState } from 'react';
-import { Festival } from '../../types';
-import { Sparkles, Calendar, MapPin, Info, Compass, CheckCircle2 } from 'lucide-react';
+import { Calendar, Info } from 'lucide-react';
 
-interface FestivalsProps {
-  festivals: Festival[];
-}
-
-export const FestivalsSection: React.FC<FestivalsProps> = ({ festivals }) => {
+export const FestivalsSection = ({ festivals }) => {
   const [selectedMonth, setSelectedMonth] = useState('all');
-  const [selectedFestival, setSelectedFestival] = useState<Festival | null>(null);
 
-  const months = ['all', 'June', 'November', 'December'];
+  const months = ['all', 'June', 'August', 'October', 'November', 'December'];
 
   const filteredFestivals = selectedMonth === 'all'
     ? festivals
@@ -21,15 +15,15 @@ export const FestivalsSection: React.FC<FestivalsProps> = ({ festivals }) => {
       
       {/* Banner */}
       <div className="bg-gradient-to-r from-stone-900 via-stone-800 to-amber-950/60 p-8 sm:p-12 rounded-3xl border border-stone-800 text-stone-100 shadow-xl relative overflow-hidden">
-        <div className="max-w-2xl space-y-4">
+        <div className="max-w-3xl space-y-4">
           <span className="text-xs font-bold uppercase tracking-widest text-amber-400 bg-amber-500/10 border border-amber-500/20 px-3.5 py-1.5 rounded-full inline-block">
-            🪔 Fairs & Sacred Celebrations
+            🪔 Fairs & Sacred Celebrations of India
           </span>
           <h2 className="text-3xl sm:text-5xl font-serif font-bold text-white leading-tight">
-            The Living Calendar of Odia Culture
+            The Living Cultural Calendar of the Subcontinent
           </h2>
           <p className="text-stone-300 text-sm sm:text-base leading-relaxed">
-            In Odisha, every season brings a burst of devotion, classical dance, and folk gaiety—from the majestic chariots of Ratha Yatra to the maritime legacy of Bali Jatra.
+            From the grand chariots of Ratha Yatra to the million flickering diyas of Dev Deepawali in Varanasi and the desert rhythms of Pushkar and Kutch.
           </p>
         </div>
       </div>
@@ -37,7 +31,7 @@ export const FestivalsSection: React.FC<FestivalsProps> = ({ festivals }) => {
       {/* Month Filter */}
       <div className="flex items-center gap-2 overflow-x-auto scrollbar-none pb-1">
         <span className="text-xs text-stone-400 font-semibold mr-2 uppercase tracking-wide">
-          Filter by Month:
+          Filter by Season / Month:
         </span>
         {months.map((m) => (
           <button
@@ -45,7 +39,7 @@ export const FestivalsSection: React.FC<FestivalsProps> = ({ festivals }) => {
             onClick={() => setSelectedMonth(m)}
             className={`px-4 py-2 rounded-2xl text-xs font-semibold whitespace-nowrap capitalize transition ${
               selectedMonth === m
-                ? 'bg-amber-600 text-white shadow-md'
+                ? 'bg-gradient-to-r from-amber-600 to-orange-500 text-white shadow-md'
                 : 'bg-stone-800/60 hover:bg-stone-800 text-stone-300 border border-stone-700/60'
             }`}
           >
@@ -75,7 +69,7 @@ export const FestivalsSection: React.FC<FestivalsProps> = ({ festivals }) => {
                 </div>
                 <div className="absolute bottom-4 left-4 right-4 bg-stone-950/80 backdrop-blur-md p-3 rounded-2xl border border-stone-800/80 text-xs text-stone-200">
                   <span className="text-amber-400 font-bold block mb-0.5">Location:</span>
-                  {fest.location_summary || fest.destination_name || 'Odisha'}
+                  {fest.location_summary || fest.destination_name || 'India'}
                 </div>
               </div>
 

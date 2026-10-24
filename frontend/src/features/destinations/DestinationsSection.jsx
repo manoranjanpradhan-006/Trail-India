@@ -1,79 +1,86 @@
 import React, { useState } from 'react';
-import { Destination, Place } from '../../types';
-import { Search, Compass, MapPin, Star, Heart, Clock, DollarSign, Sparkles } from 'lucide-react';
+import { Search, MapPin, Heart, Sparkles } from 'lucide-react';
 
-interface DestinationsSectionProps {
-  destinations: Destination[];
-  places: Place[];
-  onSelectPlace: (place: Place) => void;
-  favorites: string[];
-  onToggleFavorite: (placeId: string) => void;
-  onViewDestination: (dest: Destination) => void;
-}
-
-export const DestinationsSection: React.FC<DestinationsSectionProps> = ({
+export const DestinationsSection = ({
   destinations,
   places,
   onSelectPlace,
   favorites,
   onToggleFavorite,
-  onViewDestination,
 }) => {
-  const [selectedDestinationId, setSelectedDestinationId] = useState<string>('all');
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [selectedState, setSelectedState] = useState('all');
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const indianRegions = [
+    { id: 'all', label: 'All India' },
+    { id: 'Rajasthan', label: 'Rajasthan' },
+    { id: 'Kerala', label: 'Kerala' },
+    { id: 'Ladakh', label: 'Ladakh' },
+    { id: 'Himachal Pradesh', label: 'Himachal Pradesh' },
+    { id: 'Odisha', label: 'Odisha' },
+    { id: 'Goa', label: 'Goa' },
+    { id: 'Karnataka', label: 'Karnataka' },
+    { id: 'Tamil Nadu', label: 'Tamil Nadu' },
+    { id: 'Uttar Pradesh', label: 'Uttar Pradesh' },
+    { id: 'Meghalaya', label: 'Meghalaya' },
+    { id: 'West Bengal', label: 'West Bengal' },
+    { id: 'Gujarat', label: 'Gujarat' },
+  ];
 
   const categories = [
     { id: 'all', label: 'All Trails' },
-    { id: 'temple', label: 'Ancient Temples' },
-    { id: 'nature', label: 'Nature & Wildlife' },
-    { id: 'heritage', label: 'UNESCO Heritage' },
-    { id: 'beach', label: 'Coast & Beaches' },
-    { id: 'craft_village', label: 'Craft Villages' },
-    { id: 'hidden_gem', label: 'Hidden Gems' },
+    { id: 'heritage', label: 'UNESCO & Forts' },
+    { id: 'temple', label: 'Sacred Temples' },
+    { id: 'nature', label: 'Himalayas & Backwaters' },
+    { id: 'beach', label: 'Beaches & Shores' },
+    { id: 'food_spot', label: 'Culinary Trails' },
   ];
 
   const filteredPlaces = places.filter((p) => {
-    const matchesDest = selectedDestinationId === 'all' || p.destination_id === selectedDestinationId;
+    const dest = destinations.find((d) => d.id === p.destination_id);
+    const matchesState = selectedState === 'all' || (dest && dest.state === selectedState);
     const matchesCat = selectedCategory === 'all' || p.category === selectedCategory;
     const matchesSearch = searchQuery === '' || 
       p.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-      p.description.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesDest && matchesCat && matchesSearch;
+      p.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (dest && dest.name.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (dest && dest.state.toLowerCase().includes(searchQuery.toLowerCase()));
+    return matchesState && matchesCat && matchesSearch;
   });
 
   return (
     <div className="space-y-12 animate-in fade-in duration-300">
       
-      {/* Hero Welcome Section */}
-      <div className="relative rounded-3xl overflow-hidden border border-stone-800 shadow-2xl bg-stone-900 min-h-[420px] flex items-center">
+      {/* Pan-India Hero Welcome Section */}
+      <div className="relative rounded-3xl overflow-hidden border border-stone-800 shadow-2xl bg-stone-900 min-h-[460px] flex items-center">
         <img
-          src="https://images.unsplash.com/photo-1628085446059-e93cb101ee63?auto=format&fit=crop&w=1600&q=80"
-          alt="Odisha Trails"
-          className="absolute inset-0 w-full h-full object-cover opacity-35"
+          src="https://images.unsplash.com/photo-1524492412937-b28074a5d7da?auto=format&fit=crop&w=1600&q=80"
+          alt="Incredible India Taj Mahal and Heritage"
+          className="absolute inset-0 w-full h-full object-cover opacity-30"
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-stone-950 via-stone-950/80 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-r from-stone-950 via-stone-950/85 to-transparent" />
         
-        <div className="relative z-10 max-w-2xl p-8 sm:p-14 space-y-6">
+        <div className="relative z-10 max-w-3xl p-8 sm:p-14 space-y-6">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-bold uppercase tracking-wider">
             <Sparkles className="w-3.5 h-3.5" />
-            Discover Odisha: India's Best Kept Secret
+            Discover India, One Trail at a Time • Pan-India Platform
           </div>
 
           <h1 className="text-4xl sm:text-6xl font-serif font-bold text-white tracking-tight leading-tight">
-            Ancient Stones, Whispering Pines & Sacred Shores.
+            From Himalayan Heights to the Sacred Southern Shores.
           </h1>
 
           <p className="text-stone-300 text-sm sm:text-base leading-relaxed">
-            From the celestial sundials of Konark and the blue flag sands of Puri to the tranquil dolphin lagoons of Chilika and the coffee estates of Daringbadi.
+            Explore golden desert forts in Rajasthan, tranquil backwaters in Kerala, high-altitude passes in Ladakh, living root bridges in Meghalaya, and ancient temple spires in Odisha.
           </p>
 
           {/* Quick Search Bar */}
-          <div className="bg-stone-900/90 backdrop-blur-md p-2 rounded-2xl border border-stone-700/80 shadow-2xl flex items-center gap-2 max-w-lg">
-            <Search className="w-5 h-5 text-stone-400 ml-3 shrink-0" />
+          <div className="bg-stone-900/95 backdrop-blur-md p-2 rounded-2xl border border-amber-500/40 shadow-2xl flex items-center gap-2 max-w-lg">
+            <Search className="w-5 h-5 text-amber-400 ml-3 shrink-0" />
             <input
               type="text"
-              placeholder="Search temples, falls, beaches, or crafts..."
+              placeholder="Search across India: forts, ghats, tea hills, beaches..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="bg-transparent w-full text-stone-100 placeholder:text-stone-500 text-sm focus:outline-none py-1.5"
@@ -90,33 +97,53 @@ export const DestinationsSection: React.FC<DestinationsSectionProps> = ({
         </div>
       </div>
 
-      {/* Featured Destinations Row */}
+      {/* State & Destination Selector Carousel */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-serif font-bold text-white">Popular Destinations</h2>
-            <p className="text-xs text-stone-400">Select a region to view local attractions and guides</p>
+            <h2 className="text-2xl font-serif font-bold text-white flex items-center gap-2">
+              <span>🇮🇳</span> Iconic Destinations Across India
+            </h2>
+            <p className="text-xs text-stone-400">Select any state or heritage circuit</p>
           </div>
           <button
-            onClick={() => setSelectedDestinationId('all')}
+            onClick={() => setSelectedState('all')}
             className={`text-xs font-semibold px-3 py-1.5 rounded-xl transition ${
-              selectedDestinationId === 'all'
+              selectedState === 'all'
                 ? 'bg-amber-600 text-white'
                 : 'text-stone-400 hover:text-stone-200'
             }`}
           >
-            Show All Regions
+            Show All States
           </button>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-3">
+        {/* State Filter Buttons */}
+        <div className="flex items-center gap-2 overflow-x-auto scrollbar-none pb-2">
+          {indianRegions.map((st) => (
+            <button
+              key={st.id}
+              onClick={() => setSelectedState(st.id)}
+              className={`px-4 py-2 rounded-2xl text-xs font-semibold whitespace-nowrap transition ${
+                selectedState === st.id
+                  ? 'bg-gradient-to-r from-amber-600 to-orange-500 text-white shadow-md'
+                  : 'bg-stone-800/60 hover:bg-stone-800 text-stone-300 border border-stone-700/60'
+              }`}
+            >
+              {st.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Destination Cards Strip */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
           {destinations.map((dest) => {
-            const isSelected = selectedDestinationId === dest.id;
+            const isSelected = selectedState === dest.state;
             return (
               <button
                 key={dest.id}
-                onClick={() => setSelectedDestinationId(isSelected ? 'all' : dest.id)}
-                className={`group relative p-3 rounded-2xl text-left transition-all border overflow-hidden flex flex-col justify-end min-h-[110px] ${
+                onClick={() => setSelectedState(isSelected ? 'all' : dest.state)}
+                className={`group relative p-3 rounded-2xl text-left transition-all border overflow-hidden flex flex-col justify-end min-h-[125px] ${
                   isSelected
                     ? 'border-amber-500 ring-2 ring-amber-500/50 shadow-lg'
                     : 'border-stone-800 bg-stone-900 hover:border-stone-700'
@@ -125,15 +152,15 @@ export const DestinationsSection: React.FC<DestinationsSectionProps> = ({
                 <img
                   src={dest.banner_image}
                   alt={dest.name}
-                  className="absolute inset-0 w-full h-full object-cover opacity-40 group-hover:scale-110 transition-transform duration-500"
+                  className="absolute inset-0 w-full h-full object-cover opacity-45 group-hover:scale-110 transition-transform duration-500"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-stone-950 via-stone-950/60 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-stone-950 via-stone-950/70 to-transparent" />
                 <div className="relative z-10">
                   <span className="font-serif font-bold text-sm text-white block group-hover:text-amber-400 transition-colors">
                     {dest.name}
                   </span>
-                  <span className="text-[10px] text-stone-400 block truncate">
-                    {dest.district}
+                  <span className="text-[10px] text-amber-300 font-medium block truncate">
+                    📍 {dest.state}
                   </span>
                 </div>
               </button>
@@ -163,7 +190,7 @@ export const DestinationsSection: React.FC<DestinationsSectionProps> = ({
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <p className="text-xs text-stone-400">
-            Showing <strong className="text-amber-400">{filteredPlaces.length}</strong> curated places
+            Showing <strong className="text-amber-400">{filteredPlaces.length}</strong> curated places across India
           </p>
         </div>
 
@@ -172,7 +199,7 @@ export const DestinationsSection: React.FC<DestinationsSectionProps> = ({
             <p className="text-stone-400 text-sm">No places found matching your filter or search criteria.</p>
             <button
               onClick={() => {
-                setSelectedDestinationId('all');
+                setSelectedState('all');
                 setSelectedCategory('all');
                 setSearchQuery('');
               }}
@@ -185,6 +212,8 @@ export const DestinationsSection: React.FC<DestinationsSectionProps> = ({
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredPlaces.map((place) => {
               const isFav = favorites.includes(place.id);
+              const dest = destinations.find((d) => d.id === place.destination_id);
+
               return (
                 <div
                   key={place.id}
@@ -216,14 +245,8 @@ export const DestinationsSection: React.FC<DestinationsSectionProps> = ({
                       <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between text-xs text-white">
                         <span className="bg-stone-950/80 backdrop-blur-md px-2.5 py-1 rounded-lg flex items-center gap-1 font-medium">
                           <MapPin className="w-3.5 h-3.5 text-amber-500" />
-                          {place.destination_name || 'Odisha'}
+                          {dest ? `${dest.name}, ${dest.state}` : 'India'}
                         </span>
-                        {place.rating !== undefined && place.rating > 0 && (
-                          <span className="bg-stone-950/80 backdrop-blur-md px-2.5 py-1 rounded-lg flex items-center gap-1 font-bold text-amber-400">
-                            <Star className="w-3 h-3 fill-amber-400" />
-                            {place.rating.toFixed(1)}
-                          </span>
-                        )}
                       </div>
                     </div>
 

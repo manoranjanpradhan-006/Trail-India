@@ -1,19 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { X, Star, MapPin, Clock, DollarSign, Heart, MessageSquare, Send, CheckCircle2, AlertCircle } from 'lucide-react';
-import { Place, Review, User } from '../types';
 import { api } from '../services/api';
 
-interface PlaceDetailModalProps {
-  place: Place | null;
-  onClose: () => void;
-  user: User | null;
-  isFavorite: boolean;
-  onToggleFavorite: (placeId: string) => void;
-  onViewOnMap: (place: Place) => void;
-  onOpenAuth: () => void;
-}
-
-export const PlaceDetailModal: React.FC<PlaceDetailModalProps> = ({
+export const PlaceDetailModal = ({
   place,
   onClose,
   user,
@@ -22,7 +11,7 @@ export const PlaceDetailModal: React.FC<PlaceDetailModalProps> = ({
   onViewOnMap,
   onOpenAuth,
 }) => {
-  const [reviews, setReviews] = useState<Review[]>([]);
+  const [reviews, setReviews] = useState([]);
   const [loadingReviews, setLoadingReviews] = useState(false);
   
   // New review form
@@ -42,7 +31,7 @@ export const PlaceDetailModal: React.FC<PlaceDetailModalProps> = ({
     }
   }, [place]);
 
-  const loadReviews = async (id: string) => {
+  const loadReviews = async (id) => {
     setLoadingReviews(true);
     try {
       const data = await api.getPlaceReviews(id);
@@ -54,7 +43,7 @@ export const PlaceDetailModal: React.FC<PlaceDetailModalProps> = ({
     }
   };
 
-  const handleReviewSubmit = async (e: React.FormEvent) => {
+  const handleReviewSubmit = async (e) => {
     e.preventDefault();
     if (!user) {
       onOpenAuth();
@@ -77,7 +66,7 @@ export const PlaceDetailModal: React.FC<PlaceDetailModalProps> = ({
       setTitle('');
       setComment('');
       loadReviews(place.id);
-    } catch (err: any) {
+    } catch (err) {
       setErrorMsg(err.message || 'Failed to submit review');
     } finally {
       setSubmitting(false);
@@ -142,7 +131,7 @@ export const PlaceDetailModal: React.FC<PlaceDetailModalProps> = ({
                   onClose();
                   onViewOnMap(place);
                 }}
-                className="bg-amber-600 hover:bg-amber-500 text-white px-4 py-3 rounded-full flex items-center gap-2 text-sm font-semibold shadow-lg shadow-amber-950/30 transition"
+                className="bg-gradient-to-r from-amber-600 to-orange-500 hover:from-amber-500 hover:to-orange-400 text-white px-4 py-3 rounded-full flex items-center gap-2 text-sm font-semibold shadow-lg shadow-amber-950/30 transition"
               >
                 <MapPin className="w-4 h-4" />
                 <span>Locate on Map</span>
@@ -174,7 +163,7 @@ export const PlaceDetailModal: React.FC<PlaceDetailModalProps> = ({
               <MapPin className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
               <div>
                 <p className="text-xs text-stone-400">Location</p>
-                <p className="text-sm font-medium text-stone-200 truncate">{place.address || 'Odisha, India'}</p>
+                <p className="text-sm font-medium text-stone-200 truncate">{place.address || 'India'}</p>
               </div>
             </div>
           </div>
@@ -216,7 +205,7 @@ export const PlaceDetailModal: React.FC<PlaceDetailModalProps> = ({
                   Community Reviews & Ratings
                 </h3>
                 <p className="text-xs text-stone-400 mt-1">
-                  Authentic experiences from fellow explorers
+                  Authentic experiences from fellow explorers across India
                 </p>
               </div>
 
@@ -275,7 +264,7 @@ export const PlaceDetailModal: React.FC<PlaceDetailModalProps> = ({
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <input
                       type="text"
-                      placeholder="Review Headline (e.g., Unforgettable sunset views)"
+                      placeholder="Review Headline (e.g., Unforgettable sunrise over the peaks)"
                       value={title}
                       onChange={(e) => setTitle(e.target.value)}
                       required

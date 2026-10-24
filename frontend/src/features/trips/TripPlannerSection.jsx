@@ -1,19 +1,8 @@
 import React, { useState } from 'react';
-import { Trip, TripDay, TripDayItem, Place, User } from '../../types';
 import { api } from '../../services/api';
-import { Calendar, Plus, Trash2, MapPin, DollarSign, Clock, CheckCircle2, BookmarkCheck, Heart } from 'lucide-react';
+import { Plus, Trash2, Clock, Heart } from 'lucide-react';
 
-interface TripPlannerProps {
-  trips: Trip[];
-  favorites: Place[];
-  allPlaces: Place[];
-  user: User | null;
-  onOpenAuth: () => void;
-  onRefreshTrips: () => void;
-  onSelectPlace: (place: Place) => void;
-}
-
-export const TripPlannerSection: React.FC<TripPlannerProps> = ({
+export const TripPlannerSection = ({
   trips,
   favorites,
   allPlaces,
@@ -22,68 +11,67 @@ export const TripPlannerSection: React.FC<TripPlannerProps> = ({
   onRefreshTrips,
   onSelectPlace,
 }) => {
-  const [activeTrip, setActiveTrip] = useState<Trip | null>(trips[0] || null);
   const [isCreatingNew, setIsCreatingNew] = useState(false);
 
   // New Trip Builder State
-  const [newTitle, setNewTitle] = useState('3-Day Coastal & Heritage Odyssey');
-  const [newDesc, setNewDesc] = useState('An immersive circuit through Puri, Konark, and Bhubaneswar.');
+  const [newTitle, setNewTitle] = useState('7-Day Incredible India Golden Circuit');
+  const [newDesc, setNewDesc] = useState('An iconic journey across Rajasthan forts, Varanasi ghats, and Kerala lagoons.');
   const [newStartDate, setNewStartDate] = useState('2026-11-15');
-  const [newEndDate, setNewEndDate] = useState('2026-11-18');
-  const [newBudget, setNewBudget] = useState(6000);
-  const [days, setDays] = useState<TripDay[]>([
+  const [newEndDate, setNewEndDate] = useState('2026-11-22');
+  const [newBudget, setNewBudget] = useState(15000);
+  const [days, setDays] = useState([
     {
       day_number: 1,
-      title: 'Bhubaneswar Old Town & Temples',
+      title: 'Jaipur Forts & Rajput Heritage',
       items: [
         {
-          place_id: 'plc-bhubaneswar-lingaraj',
-          place_name: 'Lingaraj Temple',
-          category: 'temple',
+          place_id: 'plc-jaipur-amber',
+          place_name: 'Amber Fort & Palace',
+          category: 'heritage',
           time_slot: '09:00 AM',
-          estimated_cost: 50,
-          notes: 'Visit early for quiet morning prayer and serene sandstone views',
+          estimated_cost: 500,
+          notes: 'Ascend to the hilltop ramparts and explore Sheesh Mahal mirror mosaics',
         },
         {
-          place_id: 'plc-food-dalma',
-          place_name: 'Odia Thali & Dalma Kitchen',
+          place_id: 'plc-food-jaipur-dalbaati',
+          place_name: 'Rawat Misthan Bhandar & Chokhi Dhani',
           category: 'food_spot',
           time_slot: '01:00 PM',
-          estimated_cost: 300,
-          notes: 'Try traditional Dalma with roasted cumin chili tempering',
+          estimated_cost: 350,
+          notes: 'Enjoy authentic Dal Baati Churma and crispy Pyaz Kachori',
         },
       ],
     },
     {
       day_number: 2,
-      title: 'Konark Sun Temple & Marine Drive',
+      title: 'Sacred Kashi & Sunrise on the Ganga',
       items: [
         {
-          place_id: 'plc-konark-sun-temple',
-          place_name: 'Konark Sun Temple',
+          place_id: 'plc-varanasi-ghats',
+          place_name: 'Dashashwamedh Ghat & Evening Ganga Aarti',
           category: 'heritage',
-          time_slot: '09:30 AM',
-          estimated_cost: 200,
-          notes: 'Marvel at 24 sundial chariot wheels',
+          time_slot: '05:30 PM',
+          estimated_cost: 300,
+          notes: 'Witness the synchronized evening flame rituals from a wooden riverboat',
         },
       ],
     },
   ]);
 
-  const [selectedPlaceToAdd, setSelectedPlaceToAdd] = useState<string>('');
-  const [targetDayIndex, setTargetDayIndex] = useState<number>(0);
+  const [selectedPlaceToAdd, setSelectedPlaceToAdd] = useState('');
+  const [targetDayIndex, setTargetDayIndex] = useState(0);
 
   const handleAddPlaceToDay = () => {
     if (!selectedPlaceToAdd) return;
     const targetPlace = allPlaces.find((p) => p.id === selectedPlaceToAdd);
     if (!targetPlace) return;
 
-    const newItem: TripDayItem = {
+    const newItem = {
       place_id: targetPlace.id,
       place_name: targetPlace.name,
       category: targetPlace.category,
       time_slot: '02:00 PM',
-      estimated_cost: 150,
+      estimated_cost: 200,
       notes: `Explore ${targetPlace.name}`,
     };
 
@@ -93,7 +81,7 @@ export const TripPlannerSection: React.FC<TripPlannerProps> = ({
     setSelectedPlaceToAdd('');
   };
 
-  const handleRemoveItem = (dayIdx: number, itemIdx: number) => {
+  const handleRemoveItem = (dayIdx, itemIdx) => {
     const updated = [...days];
     updated[dayIdx].items.splice(itemIdx, 1);
     setDays(updated);
@@ -105,7 +93,7 @@ export const TripPlannerSection: React.FC<TripPlannerProps> = ({
       ...days,
       {
         day_number: newDayNum,
-        title: `Day ${newDayNum}: Explore Odisha`,
+        title: `Day ${newDayNum}: Explore Incredible India`,
         items: [],
       },
     ]);
@@ -129,7 +117,7 @@ export const TripPlannerSection: React.FC<TripPlannerProps> = ({
       alert('Trip itinerary saved successfully!');
       setIsCreatingNew(false);
       onRefreshTrips();
-    } catch (e: any) {
+    } catch (e) {
       alert(e.message || 'Failed to save trip');
     }
   };
@@ -144,10 +132,10 @@ export const TripPlannerSection: React.FC<TripPlannerProps> = ({
             🗺️ Trip & Itinerary Architect
           </span>
           <h2 className="text-3xl sm:text-4xl font-serif font-bold text-white leading-tight">
-            Design Your Custom Odyssey Across Odisha
+            Design Your Custom Odyssey Across India
           </h2>
           <p className="text-stone-300 text-sm leading-relaxed">
-            Organize multi-day journeys, allocate daily time slots, estimate travel budgets, and incorporate your saved favorite attractions.
+            Organize multi-state journeys, allocate daily time slots, estimate travel budgets, and incorporate your saved favorite attractions across the country.
           </p>
         </div>
 
@@ -159,7 +147,7 @@ export const TripPlannerSection: React.FC<TripPlannerProps> = ({
             }
             setIsCreatingNew(true);
           }}
-          className="bg-amber-600 hover:bg-amber-500 text-white font-semibold text-sm px-6 py-3.5 rounded-2xl shadow-lg shadow-orange-950/30 flex items-center gap-2 transition hover:scale-105 shrink-0"
+          className="bg-gradient-to-r from-amber-600 to-orange-500 hover:from-amber-500 hover:to-orange-400 text-white font-semibold text-sm px-6 py-3.5 rounded-2xl shadow-lg shadow-orange-950/30 flex items-center gap-2 transition hover:scale-105 shrink-0"
         >
           <Plus className="w-5 h-5" />
           Create New Itinerary
@@ -274,10 +262,10 @@ export const TripPlannerSection: React.FC<TripPlannerProps> = ({
                     onChange={(e) => setSelectedPlaceToAdd(e.target.value)}
                     className="flex-1 bg-stone-900 border border-stone-700 rounded-xl px-3 py-2 text-xs text-stone-200"
                   >
-                    <option value="">Select an attraction, food spot, or village...</option>
+                    <option value="">Select an attraction, fort, or culinary spot across India...</option>
                     {allPlaces.map((p) => (
                       <option key={p.id} value={p.id}>
-                        {p.name} ({p.destination_name || 'Odisha'})
+                        {p.name} ({p.destination_name || 'India'})
                       </option>
                     ))}
                   </select>
@@ -375,7 +363,7 @@ export const TripPlannerSection: React.FC<TripPlannerProps> = ({
                   </div>
                   <h3 className="text-xl font-bold font-serif text-white">No Trips Saved Yet</h3>
                   <p className="text-sm text-stone-400 max-w-md mx-auto">
-                    Plan your upcoming trip to Odisha! Create custom days, time slots, and budget outlines.
+                    Plan your upcoming journey across India! Create custom day schedules, time slots, and travel budgets.
                   </p>
                   <button
                     onClick={() => setIsCreatingNew(true)}

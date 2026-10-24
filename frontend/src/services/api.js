@@ -1,10 +1,8 @@
-import type { Destination, Place, Festival, Review, BlogPost, Favorite, Trip, User } from '../types';
-
 const API_BASE = '/api/v1';
 
-function getAuthHeaders(): HeadersInit {
+function getAuthHeaders() {
   const token = localStorage.getItem('trail_india_token');
-  const headers: HeadersInit = {
+  const headers = {
     'Content-Type': 'application/json',
   };
   if (token) {
@@ -15,7 +13,7 @@ function getAuthHeaders(): HeadersInit {
 
 export const api = {
   // Auth
-  async register(data: { email: string; password: string; display_name: string; location?: string; bio?: string }) {
+  async register(data) {
     const res = await fetch(`${API_BASE}/auth/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -25,10 +23,10 @@ export const api = {
       const err = await res.json().catch(() => ({ error: 'Registration failed' }));
       throw new Error(err.error || 'Registration failed');
     }
-    return res.json() as Promise<{ token: string; user: User }>;
+    return res.json();
   },
 
-  async login(data: { email: string; password: string }) {
+  async login(data) {
     const res = await fetch(`${API_BASE}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -38,7 +36,7 @@ export const api = {
       const err = await res.json().catch(() => ({ error: 'Invalid login credentials' }));
       throw new Error(err.error || 'Invalid login credentials');
     }
-    return res.json() as Promise<{ token: string; user: User }>;
+    return res.json();
   },
 
   async getMe() {
@@ -46,24 +44,24 @@ export const api = {
       headers: getAuthHeaders(),
     });
     if (!res.ok) throw new Error('Not authenticated');
-    return res.json() as Promise<User>;
+    return res.json();
   },
 
   // Destinations
-  async getDestinations(): Promise<Destination[]> {
+  async getDestinations() {
     const res = await fetch(`${API_BASE}/destinations`);
     if (!res.ok) throw new Error('Failed to fetch destinations');
     return res.json();
   },
 
-  async getDestination(slug: string): Promise<Destination> {
+  async getDestination(slug) {
     const res = await fetch(`${API_BASE}/destinations/${slug}`);
     if (!res.ok) throw new Error('Failed to fetch destination');
     return res.json();
   },
 
   // Places
-  async getPlaces(params?: { category?: string; destination_id?: string; search?: string; featured?: boolean }): Promise<Place[]> {
+  async getPlaces(params) {
     const query = new URLSearchParams();
     if (params?.category) query.set('category', params.category);
     if (params?.destination_id) query.set('destination_id', params.destination_id);
@@ -75,20 +73,20 @@ export const api = {
     return res.json();
   },
 
-  async getPlace(id: string): Promise<Place> {
+  async getPlace(id) {
     const res = await fetch(`${API_BASE}/places/${id}`);
     if (!res.ok) throw new Error('Failed to fetch place');
     return res.json();
   },
 
   // Reviews
-  async getPlaceReviews(placeId: string): Promise<Review[]> {
+  async getPlaceReviews(placeId) {
     const res = await fetch(`${API_BASE}/places/${placeId}/reviews`);
     if (!res.ok) throw new Error('Failed to fetch reviews');
     return res.json();
   },
 
-  async createReview(placeId: string, data: { rating: number; title: string; comment: string; visit_date?: string }) {
+  async createReview(placeId, data) {
     const res = await fetch(`${API_BASE}/places/${placeId}/reviews`, {
       method: 'POST',
       headers: getAuthHeaders(),
@@ -101,7 +99,7 @@ export const api = {
     return res.json();
   },
 
-  async reportReview(reviewId: string) {
+  async reportReview(reviewId) {
     const res = await fetch(`${API_BASE}/reviews/${reviewId}/report`, {
       method: 'POST',
       headers: getAuthHeaders(),
@@ -110,7 +108,7 @@ export const api = {
   },
 
   // Festivals
-  async getFestivals(params?: { month?: string; destination_id?: string; search?: string }): Promise<Festival[]> {
+  async getFestivals(params) {
     const query = new URLSearchParams();
     if (params?.month) query.set('month', params.month);
     if (params?.destination_id) query.set('destination_id', params.destination_id);
@@ -122,7 +120,7 @@ export const api = {
   },
 
   // Blog
-  async getBlogPosts(params?: { category?: string; search?: string; status?: string }): Promise<BlogPost[]> {
+  async getBlogPosts(params) {
     const query = new URLSearchParams();
     if (params?.category) query.set('category', params.category);
     if (params?.search) query.set('search', params.search);
@@ -135,13 +133,13 @@ export const api = {
     return res.json();
   },
 
-  async getBlogPost(slug: string): Promise<BlogPost> {
+  async getBlogPost(slug) {
     const res = await fetch(`${API_BASE}/blog/posts/${slug}`);
     if (!res.ok) throw new Error('Failed to fetch blog post');
     return res.json();
   },
 
-  async createBlogPost(data: Partial<BlogPost>) {
+  async createBlogPost(data) {
     const res = await fetch(`${API_BASE}/blog/posts`, {
       method: 'POST',
       headers: getAuthHeaders(),
@@ -154,7 +152,7 @@ export const api = {
     return res.json();
   },
 
-  async bookmarkPost(postId: string) {
+  async bookmarkPost(postId) {
     const res = await fetch(`${API_BASE}/blog/posts/${postId}/bookmark`, {
       method: 'POST',
       headers: getAuthHeaders(),
@@ -163,7 +161,7 @@ export const api = {
   },
 
   // Favorites
-  async getFavorites(): Promise<Favorite[]> {
+  async getFavorites() {
     const res = await fetch(`${API_BASE}/favorites`, {
       headers: getAuthHeaders(),
     });
@@ -171,7 +169,7 @@ export const api = {
     return res.json();
   },
 
-  async addFavorite(placeId: string) {
+  async addFavorite(placeId) {
     const res = await fetch(`${API_BASE}/favorites`, {
       method: 'POST',
       headers: getAuthHeaders(),
@@ -181,7 +179,7 @@ export const api = {
     return res.json();
   },
 
-  async removeFavorite(placeId: string) {
+  async removeFavorite(placeId) {
     const res = await fetch(`${API_BASE}/favorites/${placeId}`, {
       method: 'DELETE',
       headers: getAuthHeaders(),
@@ -191,7 +189,7 @@ export const api = {
   },
 
   // Trips
-  async getTrips(): Promise<Trip[]> {
+  async getTrips() {
     const res = await fetch(`${API_BASE}/trips`, {
       headers: getAuthHeaders(),
     });
@@ -199,7 +197,7 @@ export const api = {
     return res.json();
   },
 
-  async createTrip(data: Partial<Trip>) {
+  async createTrip(data) {
     const res = await fetch(`${API_BASE}/trips`, {
       method: 'POST',
       headers: getAuthHeaders(),
@@ -209,7 +207,7 @@ export const api = {
     return res.json();
   },
 
-  async deleteTrip(tripId: string) {
+  async deleteTrip(tripId) {
     const res = await fetch(`${API_BASE}/trips/${tripId}`, {
       method: 'DELETE',
       headers: getAuthHeaders(),
@@ -219,7 +217,7 @@ export const api = {
   },
 
   // Admin
-  async getPendingArticles(): Promise<BlogPost[]> {
+  async getPendingArticles() {
     const res = await fetch(`${API_BASE}/admin/pending-articles`, {
       headers: getAuthHeaders(),
     });
@@ -227,7 +225,7 @@ export const api = {
     return res.json();
   },
 
-  async reviewArticle(postId: string, action: 'approve' | 'reject') {
+  async reviewArticle(postId, action) {
     const res = await fetch(`${API_BASE}/admin/articles/${postId}/review`, {
       method: 'POST',
       headers: getAuthHeaders(),

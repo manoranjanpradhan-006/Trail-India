@@ -1,20 +1,13 @@
 import React, { useState } from 'react';
 import { X, Lock, Mail, User as UserIcon, AlertCircle, Sparkles } from 'lucide-react';
 import { api } from '../services/api';
-import { User } from '../types';
 
-interface AuthModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onLoginSuccess: (user: User) => void;
-}
-
-export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }) => {
+export const AuthModal = ({ isOpen, onClose, onLoginSuccess }) => {
   const [isRegister, setIsRegister] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
-  const [location, setLocation] = useState('Odisha, India');
+  const [location, setLocation] = useState('New Delhi, India');
   const [bio, setBio] = useState('');
   
   const [loading, setLoading] = useState(false);
@@ -22,7 +15,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSu
 
   if (!isOpen) return null;
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setErrorMsg('');
@@ -45,14 +38,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSu
         onLoginSuccess(res.user);
         onClose();
       }
-    } catch (err: any) {
+    } catch (err) {
       setErrorMsg(err.message || 'Authentication error');
     } finally {
       setLoading(false);
     }
   };
 
-  const fillQuickAccount = (demoEmail: string) => {
+  const fillQuickAccount = (demoEmail) => {
     setIsRegister(false);
     setEmail(demoEmail);
     setPassword('password123');
@@ -73,16 +66,16 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSu
 
         {/* Header */}
         <div className="text-center mb-6">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-600 to-orange-500 mx-auto flex items-center justify-center text-2xl shadow-lg shadow-orange-950/30 mb-3">
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-600 to-orange-500 mx-auto flex items-center justify-center text-2xl shadow-lg shadow-orange-950/30 mb-3 border border-amber-400/40">
             🛕
           </div>
           <h3 className="text-2xl font-serif font-bold text-white">
-            {isRegister ? 'Join Trail India' : 'Welcome Back'}
+            {isRegister ? 'Join Trail India' : 'Welcome to Trail India'}
           </h3>
           <p className="text-xs text-stone-400 mt-1">
             {isRegister 
               ? 'Become a contributor, save trails, and share recommendations' 
-              : 'Sign in to access your itinerary, drafts, and saved trails'}
+              : 'Sign in to access your custom itineraries and bookmarked trails'}
           </p>
         </div>
 
@@ -137,19 +130,19 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSu
                     required
                     value={displayName}
                     onChange={(e) => setDisplayName(e.target.value)}
-                    placeholder="e.g., Ananya Mohanty"
+                    placeholder="e.g., Ananya Sharma"
                     className="w-full bg-stone-950 border border-stone-700 rounded-xl pl-9 pr-4 py-2.5 text-sm text-stone-100 focus:outline-none focus:border-amber-500"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-stone-300 mb-1">Your City / State</label>
+                <label className="block text-xs font-medium text-stone-300 mb-1">City / State</label>
                 <input
                   type="text"
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
-                  placeholder="e.g., Bhubaneswar, Odisha"
+                  placeholder="e.g., Jaipur, Rajasthan"
                   className="w-full bg-stone-950 border border-stone-700 rounded-xl px-4 py-2.5 text-sm text-stone-100 focus:outline-none focus:border-amber-500"
                 />
               </div>

@@ -1,0 +1,38 @@
+# Dependencies
+node_modules/
+dist/
+build/
+*.log
+
+# Go binaries
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+bin/
+backend/bin/
+backend/trail-india-api
+
+# Environment variables & secrets
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+
+# Local database files
+*.db
+*.sqlite
+*.sqlite3
+data/
+
+# IDE & OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Temp / Scratch
+tmp/
+scratch/

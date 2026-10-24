@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: trail_india_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-trail_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-trail_password}
+      POSTGRES_DB: ${POSTGRES_DB:-trail_india}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/migrations:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-trail_user} -d ${POSTGRES_DB:-trail_india}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: trail_india_backend
+    restart: always
+    environment:
+      APP_ENV: production
+      APP_PORT: 8080
+      DATABASE_URL: postgres://${POSTGRES_USER:-trail_user}:${POSTGRES_PASSWORD:-trail_password}@postgres:5432/${POSTGRES_DB:-trail_india}?sslmode=disable
+      JWT_SECRET: ${JWT_SECRET:-trail_india_super_secure_secret_key_2026}
+      FRONTEND_ORIGIN: http://localhost:5173
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  postgres_data:

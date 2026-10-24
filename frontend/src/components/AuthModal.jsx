@@ -53,26 +53,26 @@ export const AuthModal = ({ isOpen, onClose, onLoginSuccess }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-stone-950/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
-      <div className="bg-stone-900 border border-stone-800 rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl relative text-stone-100">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-[#06110D]/90 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-200">
+      <div className="bg-[#10251B] border border-[#263B2F] rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl relative text-[#F8F1E5]">
         
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 p-2 rounded-full bg-stone-800 hover:bg-stone-700 text-stone-300 hover:text-white transition"
+          className="absolute top-4 right-4 p-2 rounded-full bg-[#0B1B14] hover:bg-[#263B2F] text-[#B9B7AA] hover:text-[#F8F1E5] transition"
         >
           <X className="w-5 h-5" />
         </button>
 
         {/* Header */}
         <div className="text-center mb-6">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-600 to-orange-500 mx-auto flex items-center justify-center text-2xl shadow-lg shadow-orange-950/30 mb-3 border border-amber-400/40">
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#10251B] to-[#0B1B14] border border-[#E8B65C]/50 mx-auto flex items-center justify-center text-2xl shadow-[0_0_15px_rgba(232,182,92,0.2)] mb-3">
             🛕
           </div>
-          <h3 className="text-2xl font-serif font-bold text-white">
+          <h3 className="text-2xl font-serif font-bold text-[#F8F1E5]">
             {isRegister ? 'Join Trail India' : 'Welcome to Trail India'}
           </h3>
-          <p className="text-xs text-stone-400 mt-1">
+          <p className="text-xs text-[#B9B7AA] mt-1">
             {isRegister 
               ? 'Become a contributor, save trails, and share recommendations' 
               : 'Sign in to access your custom itineraries and bookmarked trails'}
@@ -80,29 +80,29 @@ export const AuthModal = ({ isOpen, onClose, onLoginSuccess }) => {
         </div>
 
         {/* Demo Quick-Fill Buttons */}
-        <div className="mb-6 p-3 rounded-2xl bg-stone-800/40 border border-stone-800">
-          <p className="text-[11px] font-semibold text-amber-400 uppercase tracking-wider mb-2 flex items-center gap-1">
-            <Sparkles className="w-3.5 h-3.5" /> Instant Demo Sign-in
+        <div className="mb-6 p-3.5 rounded-2xl bg-[#0B1B14] border border-[#263B2F]">
+          <p className="text-[10px] font-semibold text-[#E8B65C] uppercase tracking-wider mb-2 flex items-center gap-1">
+            <Sparkles className="w-3 h-3" /> Instant Demo Sign-in
           </p>
           <div className="grid grid-cols-3 gap-2">
             <button
               type="button"
               onClick={() => fillQuickAccount('traveler@trailindia.org')}
-              className="py-1.5 px-2 rounded-lg bg-stone-800 hover:bg-amber-600/20 text-stone-300 hover:text-amber-300 border border-stone-700 text-[11px] font-medium transition"
+              className="py-1.5 px-2 rounded-lg bg-[#06110D] hover:bg-[#E8B65C]/10 text-[#F8F1E5] hover:text-[#E8B65C] border border-[#263B2F] text-[11px] font-medium transition"
             >
               Traveler
             </button>
             <button
               type="button"
               onClick={() => fillQuickAccount('contributor@trailindia.org')}
-              className="py-1.5 px-2 rounded-lg bg-stone-800 hover:bg-amber-600/20 text-stone-300 hover:text-amber-300 border border-stone-700 text-[11px] font-medium transition"
+              className="py-1.5 px-2 rounded-lg bg-[#06110D] hover:bg-[#E8B65C]/10 text-[#F8F1E5] hover:text-[#E8B65C] border border-[#263B2F] text-[11px] font-medium transition"
             >
               Contributor
             </button>
             <button
               type="button"
               onClick={() => fillQuickAccount('admin@trailindia.org')}
-              className="py-1.5 px-2 rounded-lg bg-stone-800 hover:bg-amber-600/20 text-stone-300 hover:text-amber-300 border border-stone-700 text-[11px] font-medium transition"
+              className="py-1.5 px-2 rounded-lg bg-[#06110D] hover:bg-[#E8B65C]/10 text-[#F8F1E5] hover:text-[#E8B65C] border border-[#263B2F] text-[11px] font-medium transition"
             >
               Admin
             </button>
@@ -111,7 +111,7 @@ export const AuthModal = ({ isOpen, onClose, onLoginSuccess }) => {
 
         {/* Error Alert */}
         {errorMsg && (
-          <div className="mb-4 p-3 rounded-xl bg-red-900/30 border border-red-700/50 text-red-300 text-xs flex items-center gap-2">
+          <div className="mb-4 p-3 rounded-xl bg-red-950/60 border border-red-700 text-red-300 text-xs flex items-center gap-2">
             <AlertCircle className="w-4 h-4 shrink-0" />
             {errorMsg}
           </div>
@@ -122,59 +122,59 @@ export const AuthModal = ({ isOpen, onClose, onLoginSuccess }) => {
           {isRegister && (
             <>
               <div>
-                <label className="block text-xs font-medium text-stone-300 mb-1">Your Full Name</label>
+                <label className="block text-xs font-medium text-[#B9B7AA] mb-1">Your Full Name</label>
                 <div className="relative">
-                  <UserIcon className="w-4 h-4 absolute left-3 top-3 text-stone-500" />
+                  <UserIcon className="w-4 h-4 absolute left-3 top-3 text-[#B9B7AA]" />
                   <input
                     type="text"
                     required
                     value={displayName}
                     onChange={(e) => setDisplayName(e.target.value)}
                     placeholder="e.g., Ananya Sharma"
-                    className="w-full bg-stone-950 border border-stone-700 rounded-xl pl-9 pr-4 py-2.5 text-sm text-stone-100 focus:outline-none focus:border-amber-500"
+                    className="w-full bg-[#06110D] border border-[#263B2F] rounded-xl pl-9 pr-4 py-2.5 text-xs text-[#F8F1E5] focus:outline-none focus:border-[#E8B65C]"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-stone-300 mb-1">City / State</label>
+                <label className="block text-xs font-medium text-[#B9B7AA] mb-1">City / State</label>
                 <input
                   type="text"
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
-                  placeholder="e.g., Jaipur, Rajasthan"
-                  className="w-full bg-stone-950 border border-stone-700 rounded-xl px-4 py-2.5 text-sm text-stone-100 focus:outline-none focus:border-amber-500"
+                  placeholder="e.g., Bhubaneswar, Odisha"
+                  className="w-full bg-[#06110D] border border-[#263B2F] rounded-xl px-4 py-2.5 text-xs text-[#F8F1E5] focus:outline-none focus:border-[#E8B65C]"
                 />
               </div>
             </>
           )}
 
           <div>
-            <label className="block text-xs font-medium text-stone-300 mb-1">Email Address</label>
+            <label className="block text-xs font-medium text-[#B9B7AA] mb-1">Email Address</label>
             <div className="relative">
-              <Mail className="w-4 h-4 absolute left-3 top-3 text-stone-500" />
+              <Mail className="w-4 h-4 absolute left-3 top-3 text-[#B9B7AA]" />
               <input
                 type="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@domain.com"
-                className="w-full bg-stone-950 border border-stone-700 rounded-xl pl-9 pr-4 py-2.5 text-sm text-stone-100 focus:outline-none focus:border-amber-500"
+                className="w-full bg-[#06110D] border border-[#263B2F] rounded-xl pl-9 pr-4 py-2.5 text-xs text-[#F8F1E5] focus:outline-none focus:border-[#E8B65C]"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-stone-300 mb-1">Password</label>
+            <label className="block text-xs font-medium text-[#B9B7AA] mb-1">Password</label>
             <div className="relative">
-              <Lock className="w-4 h-4 absolute left-3 top-3 text-stone-500" />
+              <Lock className="w-4 h-4 absolute left-3 top-3 text-[#B9B7AA]" />
               <input
                 type="password"
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full bg-stone-950 border border-stone-700 rounded-xl pl-9 pr-4 py-2.5 text-sm text-stone-100 focus:outline-none focus:border-amber-500"
+                className="w-full bg-[#06110D] border border-[#263B2F] rounded-xl pl-9 pr-4 py-2.5 text-xs text-[#F8F1E5] focus:outline-none focus:border-[#E8B65C]"
               />
             </div>
           </div>
@@ -182,21 +182,21 @@ export const AuthModal = ({ isOpen, onClose, onLoginSuccess }) => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full mt-2 bg-gradient-to-r from-amber-600 to-orange-500 hover:from-amber-500 hover:to-orange-400 disabled:opacity-50 text-white font-semibold py-3 rounded-xl shadow-lg shadow-orange-950/20 text-sm transition"
+            className="w-full mt-2 bg-gradient-to-r from-[#E8B65C] to-[#C4923C] hover:from-[#F4D18A] hover:to-[#E8B65C] disabled:opacity-50 text-[#06110D] font-bold py-3 rounded-xl shadow-lg text-xs transition"
           >
             {loading ? 'Please wait...' : isRegister ? 'Create Free Account' : 'Sign In'}
           </button>
         </form>
 
         {/* Toggle Mode */}
-        <div className="mt-6 text-center text-xs text-stone-400">
+        <div className="mt-6 text-center text-xs text-[#B9B7AA]">
           {isRegister ? (
             <p>
               Already have an account?{' '}
               <button
                 type="button"
                 onClick={() => setIsRegister(false)}
-                className="text-amber-400 font-semibold hover:underline"
+                className="text-[#E8B65C] font-semibold hover:underline"
               >
                 Sign In
               </button>
@@ -207,7 +207,7 @@ export const AuthModal = ({ isOpen, onClose, onLoginSuccess }) => {
               <button
                 type="button"
                 onClick={() => setIsRegister(true)}
-                className="text-amber-400 font-semibold hover:underline"
+                className="text-[#E8B65C] font-semibold hover:underline"
               >
                 Register here
               </button>

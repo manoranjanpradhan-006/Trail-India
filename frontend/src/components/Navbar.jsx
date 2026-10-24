@@ -1,151 +1,215 @@
-import React from 'react';
-import { Compass, MapPin, Utensils, Sparkles, BookOpen, Calendar, Heart, Shield, LogIn, LogOut } from 'lucide-react';
+import React, { useState } from 'react';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
+import { 
+  Heart, 
+  Search, 
+  Menu, 
+  X, 
+  LogIn, 
+  LogOut, 
+  Shield, 
+  Sparkles,
+  MapPin,
+  Compass
+} from 'lucide-react';
 
 export const Navbar = ({
-  activeTab,
-  setActiveTab,
   user,
   onOpenAuth,
   onLogout,
-  favoritesCount,
+  favoritesCount = 0,
+  onOpenSearch,
 }) => {
-  const navItems = [
-    { id: 'destinations', label: 'Destinations', icon: Compass },
-    { id: 'food', label: 'Food & Culture', icon: Utensils },
-    { id: 'festivals', label: 'Festivals', icon: Sparkles },
-    { id: 'map', label: 'Golden Map of India', icon: MapPin },
-    { id: 'blog', label: 'Travel Chronicles', icon: BookOpen },
-    { id: 'planner', label: 'Trip Planner', icon: Calendar },
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const navLinks = [
+    { path: '/', label: 'Home' },
+    { path: '/explore', label: 'Explore' },
+    { path: '/blog', label: 'Travel Blog' },
+    { path: '/festivals', label: 'Festivals' },
+    { path: '/food', label: 'Food' },
+    { path: '/map', label: 'Map' },
   ];
 
+  const handleNav = (path) => {
+    navigate(path);
+    setMobileMenuOpen(false);
+  };
+
   return (
-    <header className="sticky top-0 z-40 bg-stone-900/90 backdrop-blur-md border-b border-amber-500/20 text-stone-100 transition-all">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <header className="sticky top-0 z-40 bg-[#06110D]/95 backdrop-blur-md border-b border-[#263B2F] transition-all">
+      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10">
         <div className="flex items-center justify-between h-20">
           
-          {/* Logo & Pan-India Brand */}
-          <div 
-            onClick={() => setActiveTab('destinations')}
-            className="flex items-center gap-3 cursor-pointer group"
+          {/* Brand Logo & Emblem (Matches Reference Image) */}
+          <Link 
+            to="/"
+            className="flex items-center gap-3.5 cursor-pointer group select-none"
           >
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-tr from-amber-600 via-orange-500 to-amber-400 flex items-center justify-center shadow-lg shadow-amber-900/40 group-hover:scale-105 transition-transform border border-amber-300/40">
-              <span className="text-2xl select-none">🛕</span>
+            {/* Minimal Royal Temple Crest */}
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#10251B] to-[#0B1B14] border border-[#E8B65C]/50 flex items-center justify-center text-[#E8B65C] shadow-[0_0_15px_rgba(232,182,92,0.2)] group-hover:border-[#E8B65C] transition-all duration-300">
+              <svg 
+                className="w-6 h-6 text-[#E8B65C]" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="1.8" 
+                strokeLinecap="round" 
+                strokeLinejoin="round"
+              >
+                <path d="M12 2L3 9v12h18V9L12 2z"/>
+                <path d="M9 21V12h6v9"/>
+                <path d="M12 2v4"/>
+                <path d="M7 9h10"/>
+              </svg>
             </div>
+
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-2xl font-bold tracking-tight font-serif text-white">
+                <span className="text-2xl font-serif font-bold tracking-tight text-[#F8F1E5] group-hover:text-[#E8B65C] transition-colors">
                   Trail India
                 </span>
-                <span className="text-[10px] font-semibold uppercase tracking-wider bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-300 border border-amber-500/40 px-2 py-0.5 rounded-full flex items-center gap-1">
-                  <span>🇮🇳</span> Whole India
+                <span className="hidden sm:inline-block text-[9px] uppercase tracking-widest px-2 py-0.5 rounded-full bg-[#10251B] text-[#E8B65C] border border-[#263B2F] font-semibold">
+                  🇮🇳 Royal
                 </span>
               </div>
-              <p className="text-xs text-stone-400 font-medium">Discover India, One Trail at a Time</p>
+              <p className="text-[10px] text-[#B9B7AA] tracking-wider uppercase font-light">
+                Discover India Beyond
+              </p>
             </div>
-          </div>
+          </Link>
 
-          {/* Desktop Nav Items */}
-          <nav className="hidden md:flex items-center gap-1 bg-stone-800/60 p-1.5 rounded-full border border-stone-700/50">
-            {navItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = activeTab === item.id;
+          {/* Desktop Navigation Links */}
+          <nav className="hidden lg:flex items-center gap-1.5 xl:gap-2">
+            {navLinks.map((item) => {
+              const isActive = location.pathname === item.path || (item.path !== '/' && location.pathname.startsWith(item.path));
               return (
                 <button
-                  key={item.id}
-                  onClick={() => setActiveTab(item.id)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                  key={item.path}
+                  onClick={() => handleNav(item.path)}
+                  className={`relative px-3.5 py-1.5 text-sm font-medium transition-all duration-200 rounded-lg flex items-center gap-1.5 ${
                     isActive
-                      ? 'bg-gradient-to-r from-amber-600 to-orange-500 text-white shadow-md'
-                      : 'text-stone-300 hover:text-white hover:bg-stone-700/50'
+                      ? 'text-[#E8B65C] font-semibold'
+                      : item.isSpecial
+                      ? 'text-[#F4D18A] hover:text-[#E8B65C]'
+                      : 'text-[#B9B7AA] hover:text-[#F8F1E5] hover:bg-[#10251B]/60'
                   }`}
                 >
-                  <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-stone-400'}`} />
-                  {item.label}
+                  {item.isSpecial && <Sparkles className="w-3.5 h-3.5 text-[#E8B65C] animate-pulse" />}
+                  <span>{item.label}</span>
+                  {isActive && (
+                    <span className="absolute bottom-0 left-3.5 right-3.5 h-[2px] bg-gradient-to-r from-transparent via-[#E8B65C] to-transparent rounded-full shadow-[0_0_8px_#E8B65C]" />
+                  )}
                 </button>
               );
             })}
           </nav>
 
-          {/* Right Action Menu: Auth & Favorites */}
-          <div className="flex items-center gap-3">
-            {/* Favorites Counter Button */}
+          {/* Right Action Controls: Search, Saved, Auth */}
+          <div className="flex items-center gap-2 sm:gap-3">
+            
+            {/* Search Input / Capsule Bar */}
+            <div
+              onClick={() => onOpenSearch && onOpenSearch()}
+              className="hidden md:flex items-center gap-2.5 bg-[#10251B]/80 hover:bg-[#10251B] border border-[#263B2F] hover:border-[#E8B65C]/50 px-3.5 py-1.5 rounded-full text-xs text-[#B9B7AA] cursor-pointer transition-all"
+            >
+              <Search className="w-3.5 h-3.5 text-[#E8B65C]" />
+              <span className="text-[11px]">Search state, place, or festival...</span>
+            </div>
+
+            {/* Mobile Search Trigger Icon */}
             <button
-              onClick={() => setActiveTab('planner')}
-              className="relative p-2.5 rounded-full bg-stone-800 hover:bg-stone-700 text-stone-300 hover:text-amber-400 border border-stone-700/80 transition"
-              title="Saved Places & Itinerary"
+              onClick={() => onOpenSearch && onOpenSearch()}
+              className="md:hidden p-2.5 rounded-full text-[#B9B7AA] hover:text-[#E8B65C] hover:bg-[#10251B] transition-colors border border-transparent hover:border-[#263B2F]"
+              title="Search"
+            >
+              <Search className="w-5 h-5" />
+            </button>
+
+            {/* Saved Destinations / Favorites Icon */}
+            <button
+              onClick={() => handleNav('/planner')}
+              className="relative p-2.5 rounded-full text-[#B9B7AA] hover:text-[#E8B65C] hover:bg-[#10251B] transition-colors border border-transparent hover:border-[#263B2F]"
+              title="Saved Places & Itinerary Planner"
             >
               <Heart className="w-5 h-5" />
               {favoritesCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-amber-500 text-stone-950 text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
+                <span className="absolute top-0 right-0 bg-[#E8B65C] text-[#06110D] font-bold text-[10px] w-4 h-4 rounded-full flex items-center justify-center shadow-md">
                   {favoritesCount}
                 </span>
               )}
             </button>
 
+            {/* User Profile or Gold-Bordered Sign In / Login */}
             {user ? (
-              <div className="flex items-center gap-3 bg-stone-800/80 border border-stone-700 py-1.5 px-3 rounded-full">
-                <div className="w-8 h-8 rounded-full bg-amber-600/30 border border-amber-500/50 flex items-center justify-center text-amber-300 font-bold text-xs uppercase">
-                  {user.profile?.display_name?.charAt(0) || user.email.charAt(0)}
+              <div className="flex items-center gap-2.5 bg-[#10251B] border border-[#263B2F] pl-2 pr-3 py-1.5 rounded-full">
+                <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-[#E8B65C] to-[#F4D18A] p-[1.5px]">
+                  <div className="w-full h-full rounded-full bg-[#06110D] flex items-center justify-center text-[#E8B65C] font-bold text-xs uppercase">
+                    {user.profile?.display_name?.charAt(0) || user.email.charAt(0)}
+                  </div>
                 </div>
-                <div className="hidden lg:block text-left text-xs">
-                  <p className="font-semibold text-stone-200 truncate max-w-[120px]">
+                <div className="hidden xl:block text-left text-xs leading-tight">
+                  <p className="font-semibold text-[#F8F1E5] truncate max-w-[100px]">
                     {user.profile?.display_name || user.email.split('@')[0]}
                   </p>
-                  <p className="text-[10px] text-amber-400 capitalize">
-                    {user.role}
-                  </p>
+                  <p className="text-[10px] text-[#E8B65C] capitalize">{user.role}</p>
                 </div>
-                {user.role === 'admin' && (
-                  <button
-                    onClick={() => setActiveTab('admin')}
-                    className="p-1 text-purple-400 hover:text-purple-300"
-                    title="Admin Moderation"
-                  >
-                    <Shield className="w-4 h-4" />
-                  </button>
-                )}
                 <button
                   onClick={onLogout}
-                  className="p-1 text-stone-400 hover:text-red-400 transition"
-                  title="Log out"
+                  className="p-1 text-[#B9B7AA] hover:text-rose-400 transition ml-1"
+                  title="Sign out"
                 >
-                  <LogOut className="w-4 h-4" />
+                  <LogOut className="w-3.5 h-3.5" />
                 </button>
               </div>
             ) : (
               <button
                 onClick={onOpenAuth}
-                className="flex items-center gap-2 bg-gradient-to-r from-amber-600 to-orange-500 hover:from-amber-500 hover:to-orange-400 text-white text-sm font-semibold px-5 py-2.5 rounded-full shadow-lg shadow-orange-950/20 transition-all hover:scale-[1.02]"
+                className="flex items-center gap-1.5 bg-[#10251B] hover:bg-[#E8B65C] hover:text-[#06110D] text-[#E8B65C] border border-[#E8B65C] font-semibold text-xs px-4 py-2 rounded-full transition-all duration-300 shadow-sm hover:shadow-[0_0_15px_rgba(232,182,92,0.3)] cursor-pointer"
               >
-                <LogIn className="w-4 h-4" />
-                Sign In
+                <LogIn className="w-3.5 h-3.5" />
+                <span>Login</span>
               </button>
             )}
+
+            {/* Mobile Hamburger Button */}
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="p-2 lg:hidden text-[#F8F1E5] hover:text-[#E8B65C] focus:outline-none"
+            >
+              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            </button>
           </div>
         </div>
 
-        {/* Mobile Navigation Bar */}
-        <div className="flex md:hidden overflow-x-auto py-2.5 gap-2 scrollbar-none border-t border-stone-800/80">
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = activeTab === item.id;
-            return (
-              <button
-                key={item.id}
-                onClick={() => setActiveTab(item.id)}
-                className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
-                  isActive
-                    ? 'bg-amber-600 text-white'
-                    : 'bg-stone-800 text-stone-300'
-                }`}
-              >
-                <Icon className="w-3.5 h-3.5" />
-                {item.label}
-              </button>
-            );
-          })}
-        </div>
+        {/* Mobile Dropdown Menu */}
+        {mobileMenuOpen && (
+          <div className="lg:hidden border-t border-[#263B2F] py-4 space-y-1 animate-in fade-in slide-in-from-top-2 duration-200">
+            {navLinks.map((item) => {
+              const isActive = location.pathname === item.path;
+              return (
+                <button
+                  key={item.path}
+                  onClick={() => handleNav(item.path)}
+                  className={`w-full text-left px-4 py-2.5 rounded-xl text-sm font-medium transition flex items-center justify-between ${
+                    isActive
+                      ? 'bg-[#10251B] text-[#E8B65C] font-semibold border-l-2 border-[#E8B65C]'
+                      : 'text-[#B9B7AA] hover:text-[#F8F1E5] hover:bg-[#10251B]/50'
+                  }`}
+                >
+                  <span>{item.label}</span>
+                  {item.isSpecial && <span className="text-[10px] font-bold text-[#E8B65C]">Flagship State</span>}
+                </button>
+              );
+            })}
+          </div>
+        )}
+
       </div>
     </header>
   );
 };
+
+export default Navbar;

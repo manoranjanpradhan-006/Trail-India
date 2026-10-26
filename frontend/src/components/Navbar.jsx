@@ -27,10 +27,9 @@ export const Navbar = ({
   const navLinks = [
     { path: '/', label: 'Home' },
     { path: '/explore', label: 'Explore' },
-    { path: '/blog', label: 'Travel Blog' },
+    { path: '/blog', label: 'Blog' },
     { path: '/festivals', label: 'Festivals' },
     { path: '/food', label: 'Food' },
-    { path: '/map', label: 'Map' },
   ];
 
   const handleNav = (path) => {

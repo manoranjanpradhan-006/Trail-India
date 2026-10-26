@@ -60,7 +60,7 @@ export const Home = ({
         <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
           
           {/* LEFT COLUMN: HERO CONTENT & STAT BADGES */}
-          <div className="lg:col-span-5 space-y-6">
+          <div className="lg:col-span-7 space-y-6">
             
             <div className="space-y-2">
               <span className="text-[11px] font-bold tracking-[0.25em] text-[#E8B65C] uppercase block font-sans">
@@ -76,7 +76,7 @@ export const Home = ({
               </p>
             </div>
 
-            <p className="text-xs sm:text-sm text-[#B9B7AA] leading-relaxed max-w-lg font-light">
+            <p className="text-xs sm:text-sm text-[#B9B7AA] leading-relaxed max-w-xl font-light">
               Explore the beauty, culture, food, festivals and hidden gems of every state. Plan your next trip, read travel stories, and share your own experiences with a community of explorers.
             </p>
 
@@ -122,9 +122,9 @@ export const Home = ({
 
           </div>
 
-          {/* RIGHT COLUMN: INTERACTIVE GLOWING GOLDEN INDIA MAP */}
-          <div className="lg:col-span-7 w-full flex items-center justify-center">
-            <div className="w-full max-w-[620px] rounded-3xl bg-[#06110D]/70 border border-[#263B2F]/80 p-3 sm:p-5 shadow-inner backdrop-blur-sm">
+          {/* RIGHT COLUMN: INTERACTIVE COMPACT GLOWING GOLDEN INDIA MAP (Survey of India Format) */}
+          <div className="lg:col-span-5 w-full flex items-center justify-center">
+            <div className="w-full max-w-[450px] rounded-2xl bg-[#06110D]/90 border border-[#263B2F] p-2 sm:p-2.5 shadow-2xl backdrop-blur-sm flex items-center justify-center">
               <IndiaMap onSelectState={(stateKey) => navigate(`/state/${stateKey}`)} />
             </div>
           </div>
@@ -134,7 +134,7 @@ export const Home = ({
       </section>
 
       {/* ============================================================ */}
-      {/* 2. STATES SECTION: ALL 28 STATES (7 CARDS PER LINE ON LAPTOP) */}
+      {/* 2. STATES SECTION: 4 FEATURED STATES ON HOME PAGE            */}
       {/* ============================================================ */}
       <section id="states-section" className="space-y-6 pt-4 scroll-mt-24">
         
@@ -143,32 +143,34 @@ export const Home = ({
           <div>
             <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-[#E8B65C] mb-1">
               <Landmark className="w-4 h-4" />
-              <span>Sovereign India • 28 States</span>
+              <span>Sovereign India • Featured States</span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#F8F1E5]">
-              Explore All 28 Indian States
+              Explore Indian States
             </h2>
             <p className="text-xs text-[#B9B7AA] mt-1 max-w-2xl font-light">
-              Click any state card to enter its dedicated portal featuring famous destinations, official tourism tagline, culinary gems, and cultural heritage.
+              Discover famous destinations, cultural heritage, and celebrated festivals. View all 28 states in the Explore portal.
             </p>
           </div>
-          <div className="text-right shrink-0">
-            <span className="text-xs px-3 py-1 rounded-full bg-[#10251B] text-[#E8B65C] border border-[#263B2F] font-semibold">
-              4 Rows • 7 Cards per Line
-            </span>
-          </div>
+          <button
+            onClick={() => navigate('/explore')}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#10251B] hover:bg-[#E8B65C] text-[#E8B65C] hover:text-[#06110D] border border-[#263B2F] hover:border-[#E8B65C] transition-all text-xs font-semibold shrink-0 group cursor-pointer"
+          >
+            <span>View All 28 States in Explore</span>
+            <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
+          </button>
         </div>
 
-        {/* 28 States Grid: exactly 7 columns on laptop/desktop display (xl:grid-cols-7) */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-7 xl:grid-cols-7 gap-3.5">
-          {statesList.map((state) => (
+        {/* 4 States Grid on Home Page */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          {statesList.slice(0, 4).map((state) => (
             <div
               key={state.id}
               onClick={() => navigate(`/state/${state.id}`)}
               className="group cursor-pointer rounded-2xl bg-[#10251B] border border-[#263B2F] hover:border-[#E8B65C] overflow-hidden transition-all duration-300 hover:-translate-y-1.5 shadow-lg hover:shadow-2xl hover:shadow-[#E8B65C]/20 flex flex-col justify-between"
             >
               {/* Image Thumbnail with Overlay Badges */}
-              <div className="relative aspect-[16/11] overflow-hidden bg-[#06110D]">
+              <div className="relative aspect-[16/10] overflow-hidden bg-[#06110D]">
                 <img
                   src={state.image}
                   alt={state.name}
@@ -178,52 +180,53 @@ export const Home = ({
                 <div className="absolute inset-0 bg-gradient-to-t from-[#10251B] via-transparent to-transparent opacity-90" />
                 
                 {/* Destinations Count Badge */}
-                <span className="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-[#06110D]/90 backdrop-blur-md text-[9px] font-bold text-[#E8B65C] border border-[#263B2F]">
+                <span className="absolute top-2.5 left-2.5 px-2.5 py-0.5 rounded-full bg-[#06110D]/90 backdrop-blur-md text-[10px] font-bold text-[#E8B65C] border border-[#263B2F]">
                   {state.destinationsCount}
                 </span>
-
-                {state.id === 'odisha' && (
-                  <span className="absolute top-2 right-2 px-1.5 py-0.5 rounded-full bg-[#E8B65C] text-[#06110D] text-[8px] font-bold">
-                    Flagship
-                  </span>
-                )}
               </div>
 
               {/* Card Content Body */}
-              <div className="p-3 flex-1 flex flex-col justify-between space-y-2.5">
-                <div>
+              <div className="p-4 flex-1 flex flex-col justify-between space-y-3">
+                <div className="space-y-2">
                   {/* State Name */}
-                  <h4 className="font-serif font-bold text-sm text-[#F8F1E5] group-hover:text-[#E8B65C] transition-colors leading-tight truncate">
+                  <h4 className="font-serif font-bold text-base text-[#F8F1E5] group-hover:text-[#E8B65C] transition-colors leading-tight truncate">
                     {state.name}
                   </h4>
 
                   {/* Official Tourism Tagline */}
-                  <p className="text-[10px] font-medium text-[#E8B65C] italic line-clamp-1 mt-0.5" title={state.officialTagline}>
+                  <p className="text-[11px] font-medium text-[#E8B65C] italic line-clamp-1" title={state.officialTagline}>
                     "{state.officialTagline}"
                   </p>
 
+                  {/* Famous Festival Highlight */}
+                  <div className="flex items-center gap-1.5 text-[11px] text-[#E8B65C] bg-[#06110D]/70 px-2.5 py-1.5 rounded-xl border border-[#263B2F]/60">
+                    <Sparkles className="w-3.5 h-3.5 text-[#E8B65C] shrink-0" />
+                    <span className="text-[#B9B7AA] font-light text-[10px]">Festival:</span>
+                    <span className="font-semibold truncate text-[11px]">{state.famousFestival || 'Traditional Fairs'}</span>
+                  </div>
+
                   {/* Most Famous Place & Capital */}
-                  <div className="mt-2 space-y-1 text-[10px] bg-[#06110D]/50 p-2 rounded-xl border border-[#263B2F]/50">
+                  <div className="space-y-1 text-[11px] bg-[#06110D]/50 p-2.5 rounded-xl border border-[#263B2F]/50">
                     <div className="flex items-center justify-between text-[#B9B7AA]">
-                      <span className="text-[#E8B65C] font-semibold text-[9px] uppercase">Capital:</span>
-                      <span className="truncate text-[#F8F1E5] font-medium max-w-[100px] text-right">{state.capital}</span>
+                      <span className="text-[#E8B65C] font-semibold text-[10px] uppercase">Capital:</span>
+                      <span className="truncate text-[#F8F1E5] font-medium max-w-[120px] text-right">{state.capital}</span>
                     </div>
                     <div className="flex items-center justify-between text-[#B9B7AA]">
-                      <span className="text-[#E8B65C] font-semibold text-[9px] uppercase">Icon:</span>
-                      <span className="truncate text-[#F8F1E5] font-medium max-w-[100px] text-right" title={state.mostFamousPlace}>{state.mostFamousPlace}</span>
+                      <span className="text-[#E8B65C] font-semibold text-[10px] uppercase">Icon:</span>
+                      <span className="truncate text-[#F8F1E5] font-medium max-w-[120px] text-right" title={state.mostFamousPlace}>{state.mostFamousPlace}</span>
                     </div>
                   </div>
 
                   {/* Description */}
-                  <p className="text-[10px] text-[#B9B7AA] line-clamp-2 mt-2 leading-relaxed font-light">
+                  <p className="text-[11px] text-[#B9B7AA] line-clamp-2 leading-relaxed font-light">
                     {state.description}
                   </p>
                 </div>
 
                 {/* Bottom Action */}
-                <div className="pt-2 border-t border-[#263B2F]/70 flex items-center justify-between text-[10px] font-semibold text-[#E8B65C] group-hover:text-[#F4D18A]">
-                  <span>Explore State</span>
-                  <ChevronRight className="w-3 h-3 transition-transform group-hover:translate-x-0.5" />
+                <div className="pt-2.5 border-t border-[#263B2F]/70 flex items-center justify-between text-[11px] font-semibold text-[#E8B65C] group-hover:text-[#F4D18A]">
+                  <span>Explore {state.name}</span>
+                  <ChevronRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
                 </div>
               </div>
             </div>
@@ -233,7 +236,7 @@ export const Home = ({
       </section>
 
       {/* ============================================================ */}
-      {/* 3. UNION TERRITORIES SECTION: ALL 9 IN ONE ROW ON LAPTOP     */}
+      {/* 3. UNION TERRITORIES SECTION: 4 FEATURED UTs ON HOME PAGE    */}
       {/* ============================================================ */}
       <section id="ut-section" className="space-y-6 pt-4 scroll-mt-24">
         
@@ -242,32 +245,34 @@ export const Home = ({
           <div>
             <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-[#E8B65C] mb-1">
               <Flag className="w-4 h-4" />
-              <span>Sovereign Territories • 9 Entities</span>
+              <span>Sovereign Territories • Featured</span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#F8F1E5]">
-              The 9 Union Territories of India
+              Union Territories of India
             </h2>
             <p className="text-xs text-[#B9B7AA] mt-1 max-w-2xl font-light">
-              Pristine island archipelagos, trans-Himalayan high passes, French colonial quarters, and the historic capital seat.
+              High mountain passes, tropical coral archipelagos, and heritage enclaves. View all territories in the Explore portal.
             </p>
           </div>
-          <div className="text-right shrink-0">
-            <span className="text-xs px-3 py-1 rounded-full bg-[#10251B] text-[#E8B65C] border border-[#263B2F] font-semibold">
-              All 9 Territories in One Row
-            </span>
-          </div>
+          <button
+            onClick={() => navigate('/explore')}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#10251B] hover:bg-[#E8B65C] text-[#E8B65C] hover:text-[#06110D] border border-[#263B2F] hover:border-[#E8B65C] transition-all text-xs font-semibold shrink-0 group cursor-pointer"
+          >
+            <span>View All Territories in Explore</span>
+            <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
+          </button>
         </div>
 
-        {/* 9 Union Territories Grid: exactly all 9 in one row on laptop (xl:grid-cols-9) */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-9 xl:grid-cols-9 gap-3">
-          {unionTerritoriesList.map((ut) => (
+        {/* 4 Union Territories Grid on Home Page */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          {unionTerritoriesList.slice(0, 4).map((ut) => (
             <div
               key={ut.id}
               onClick={() => navigate(`/state/${ut.id}`)}
               className="group cursor-pointer rounded-2xl bg-[#10251B] border border-[#263B2F] hover:border-[#E8B65C] overflow-hidden transition-all duration-300 hover:-translate-y-1.5 shadow-lg hover:shadow-2xl hover:shadow-[#E8B65C]/20 flex flex-col justify-between"
             >
               {/* Image Thumbnail */}
-              <div className="relative aspect-[16/11] overflow-hidden bg-[#06110D]">
+              <div className="relative aspect-[16/10] overflow-hidden bg-[#06110D]">
                 <img
                   src={ut.image}
                   alt={ut.name}
@@ -277,50 +282,57 @@ export const Home = ({
                 <div className="absolute inset-0 bg-gradient-to-t from-[#10251B] via-transparent to-transparent opacity-90" />
                 
                 {/* Destinations Count Badge */}
-                <span className="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded-full bg-[#06110D]/90 backdrop-blur-md text-[8px] font-bold text-[#E8B65C] border border-[#263B2F]">
+                <span className="absolute top-2.5 left-2.5 px-2.5 py-0.5 rounded-full bg-[#06110D]/90 backdrop-blur-md text-[10px] font-bold text-[#E8B65C] border border-[#263B2F]">
                   {ut.destinationsCount}
                 </span>
 
-                <span className="absolute top-1.5 right-1.5 px-1.5 py-0.5 rounded-full bg-[#10251B] text-[#E8B65C] text-[8px] font-semibold border border-[#263B2F]">
+                <span className="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-full bg-[#10251B] text-[#E8B65C] text-[9px] font-semibold border border-[#263B2F]">
                   UT
                 </span>
               </div>
 
               {/* Card Content Body */}
-              <div className="p-2.5 flex-1 flex flex-col justify-between space-y-2">
-                <div>
+              <div className="p-4 flex-1 flex flex-col justify-between space-y-3">
+                <div className="space-y-2">
                   {/* UT Name */}
-                  <h4 className="font-serif font-bold text-xs text-[#F8F1E5] group-hover:text-[#E8B65C] transition-colors leading-tight truncate" title={ut.name}>
+                  <h4 className="font-serif font-bold text-base text-[#F8F1E5] group-hover:text-[#E8B65C] transition-colors leading-tight truncate" title={ut.name}>
                     {ut.name}
                   </h4>
 
                   {/* Official Tourism Tagline */}
-                  <p className="text-[9px] font-medium text-[#E8B65C] italic line-clamp-1 mt-0.5" title={ut.officialTagline}>
+                  <p className="text-[11px] font-medium text-[#E8B65C] italic line-clamp-1" title={ut.officialTagline}>
                     "{ut.officialTagline}"
                   </p>
 
+                  {/* Famous Festival Highlight */}
+                  <div className="flex items-center gap-1.5 text-[11px] text-[#E8B65C] bg-[#06110D]/70 px-2.5 py-1.5 rounded-xl border border-[#263B2F]/60">
+                    <Sparkles className="w-3.5 h-3.5 text-[#E8B65C] shrink-0" />
+                    <span className="text-[#B9B7AA] font-light text-[10px]">Festival:</span>
+                    <span className="font-semibold truncate text-[11px]">{ut.famousFestival || 'Traditional Fairs'}</span>
+                  </div>
+
                   {/* Capital & Most Famous Place */}
-                  <div className="mt-1.5 space-y-1 text-[9px] bg-[#06110D]/50 p-1.5 rounded-lg border border-[#263B2F]/50">
+                  <div className="space-y-1 text-[11px] bg-[#06110D]/50 p-2.5 rounded-xl border border-[#263B2F]/50">
                     <div className="flex items-center justify-between text-[#B9B7AA]">
-                      <span className="text-[#E8B65C] font-semibold uppercase text-[8px]">Cap:</span>
-                      <span className="truncate text-[#F8F1E5] font-medium max-w-[70px] text-right">{ut.capital}</span>
+                      <span className="text-[#E8B65C] font-semibold uppercase text-[10px]">Cap:</span>
+                      <span className="truncate text-[#F8F1E5] font-medium max-w-[120px] text-right">{ut.capital}</span>
                     </div>
                     <div className="flex items-center justify-between text-[#B9B7AA]">
-                      <span className="text-[#E8B65C] font-semibold uppercase text-[8px]">Icon:</span>
-                      <span className="truncate text-[#F8F1E5] font-medium max-w-[70px] text-right" title={ut.mostFamousPlace}>{ut.mostFamousPlace}</span>
+                      <span className="text-[#E8B65C] font-semibold uppercase text-[10px]">Icon:</span>
+                      <span className="truncate text-[#F8F1E5] font-medium max-w-[120px] text-right" title={ut.mostFamousPlace}>{ut.mostFamousPlace}</span>
                     </div>
                   </div>
 
                   {/* Description */}
-                  <p className="text-[9px] text-[#B9B7AA] line-clamp-2 mt-1.5 leading-snug font-light">
+                  <p className="text-[11px] text-[#B9B7AA] line-clamp-2 leading-relaxed font-light">
                     {ut.description}
                   </p>
                 </div>
 
                 {/* Bottom Action */}
-                <div className="pt-1.5 border-t border-[#263B2F]/70 flex items-center justify-between text-[9px] font-semibold text-[#E8B65C] group-hover:text-[#F4D18A]">
-                  <span>Explore UT</span>
-                  <ChevronRight className="w-2.5 h-2.5 transition-transform group-hover:translate-x-0.5" />
+                <div className="pt-2.5 border-t border-[#263B2F]/70 flex items-center justify-between text-[11px] font-semibold text-[#E8B65C] group-hover:text-[#F4D18A]">
+                  <span>Explore {ut.name}</span>
+                  <ChevronRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
                 </div>
               </div>
             </div>

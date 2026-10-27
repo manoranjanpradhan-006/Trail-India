@@ -80,7 +80,7 @@ export const Navbar = ({
             </div>
           </Link>
 
-          {/*Desktop Navigation Links*/}
+          {/* Desktop Navigation Links */}
           <nav className="hidden lg:flex items-center gap-1.5 xl:gap-2">
             {navLinks.map((item) => {
               const isActive = location.pathname === item.path || (item.path !== '/' && location.pathname.startsWith(item.path));

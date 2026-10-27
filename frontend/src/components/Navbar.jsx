@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
-import { 
-  Heart, 
-  Search, 
-  Menu, 
-  X, 
-  LogIn, 
-  LogOut, 
-  Shield, 
+import {
+  Heart,
+  Search,
+  Menu,
+  X,
+  LogIn,
+  LogOut,
+  Shield,
   Sparkles,
   MapPin,
   Compass
@@ -41,27 +41,27 @@ export const Navbar = ({
     <header className="sticky top-0 z-40 bg-[#06110D]/95 backdrop-blur-md border-b border-[#263B2F] transition-all">
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10">
         <div className="flex items-center justify-between h-20">
-          
+
           {/* Brand Logo & Emblem (Matches Reference Image) */}
-          <Link 
+          <Link
             to="/"
             className="flex items-center gap-3.5 cursor-pointer group select-none"
           >
             {/* Minimal Royal Temple Crest */}
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#10251B] to-[#0B1B14] border border-[#E8B65C]/50 flex items-center justify-center text-[#E8B65C] shadow-[0_0_15px_rgba(232,182,92,0.2)] group-hover:border-[#E8B65C] transition-all duration-300">
-              <svg 
-                className="w-6 h-6 text-[#E8B65C]" 
-                viewBox="0 0 24 24" 
-                fill="none" 
-                stroke="currentColor" 
-                strokeWidth="1.8" 
-                strokeLinecap="round" 
+              <svg
+                className="w-6 h-6 text-[#E8B65C]"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
                 strokeLinejoin="round"
               >
-                <path d="M12 2L3 9v12h18V9L12 2z"/>
-                <path d="M9 21V12h6v9"/>
-                <path d="M12 2v4"/>
-                <path d="M7 9h10"/>
+                <path d="M12 2L3 9v12h18V9L12 2z" />
+                <path d="M9 21V12h6v9" />
+                <path d="M12 2v4" />
+                <path d="M7 9h10" />
               </svg>
             </div>
 
@@ -80,7 +80,7 @@ export const Navbar = ({
             </div>
           </Link>
 
-          {/* Desktop Navigation Links */}
+          {/*Desktop Navigation Links */}
           <nav className="hidden lg:flex items-center gap-1.5 xl:gap-2">
             {navLinks.map((item) => {
               const isActive = location.pathname === item.path || (item.path !== '/' && location.pathname.startsWith(item.path));
@@ -88,13 +88,12 @@ export const Navbar = ({
                 <button
                   key={item.path}
                   onClick={() => handleNav(item.path)}
-                  className={`relative px-3.5 py-1.5 text-sm font-medium transition-all duration-200 rounded-lg flex items-center gap-1.5 ${
-                    isActive
+                  className={`relative px-3.5 py-1.5 text-sm font-medium transition-all duration-200 rounded-lg flex items-center gap-1.5 ${isActive
                       ? 'text-[#E8B65C] font-semibold'
                       : item.isSpecial
-                      ? 'text-[#F4D18A] hover:text-[#E8B65C]'
-                      : 'text-[#B9B7AA] hover:text-[#F8F1E5] hover:bg-[#10251B]/60'
-                  }`}
+                        ? 'text-[#F4D18A] hover:text-[#E8B65C]'
+                        : 'text-[#B9B7AA] hover:text-[#F8F1E5] hover:bg-[#10251B]/60'
+                    }`}
                 >
                   {item.isSpecial && <Sparkles className="w-3.5 h-3.5 text-[#E8B65C] animate-pulse" />}
                   <span>{item.label}</span>
@@ -108,7 +107,7 @@ export const Navbar = ({
 
           {/* Right Action Controls: Search, Saved, Auth */}
           <div className="flex items-center gap-2 sm:gap-3">
-            
+
             {/* Search Input / Capsule Bar */}
             <div
               onClick={() => onOpenSearch && onOpenSearch()}
@@ -192,11 +191,10 @@ export const Navbar = ({
                 <button
                   key={item.path}
                   onClick={() => handleNav(item.path)}
-                  className={`w-full text-left px-4 py-2.5 rounded-xl text-sm font-medium transition flex items-center justify-between ${
-                    isActive
+                  className={`w-full text-left px-4 py-2.5 rounded-xl text-sm font-medium transition flex items-center justify-between ${isActive
                       ? 'bg-[#10251B] text-[#E8B65C] font-semibold border-l-2 border-[#E8B65C]'
                       : 'text-[#B9B7AA] hover:text-[#F8F1E5] hover:bg-[#10251B]/50'
-                  }`}
+                    }`}
                 >
                   <span>{item.label}</span>
                   {item.isSpecial && <span className="text-[10px] font-bold text-[#E8B65C]">Flagship State</span>}

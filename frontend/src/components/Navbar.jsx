@@ -80,7 +80,7 @@ export const Navbar = ({
             </div>
           </Link>
 
-          {/*Desktop Navigation Links */}
+          {/*Desktop Navigation Links*/}
           <nav className="hidden lg:flex items-center gap-1.5 xl:gap-2">
             {navLinks.map((item) => {
               const isActive = location.pathname === item.path || (item.path !== '/' && location.pathname.startsWith(item.path));
@@ -89,10 +89,10 @@ export const Navbar = ({
                   key={item.path}
                   onClick={() => handleNav(item.path)}
                   className={`relative px-3.5 py-1.5 text-sm font-medium transition-all duration-200 rounded-lg flex items-center gap-1.5 ${isActive
-                      ? 'text-[#E8B65C] font-semibold'
-                      : item.isSpecial
-                        ? 'text-[#F4D18A] hover:text-[#E8B65C]'
-                        : 'text-[#B9B7AA] hover:text-[#F8F1E5] hover:bg-[#10251B]/60'
+                    ? 'text-[#E8B65C] font-semibold'
+                    : item.isSpecial
+                      ? 'text-[#F4D18A] hover:text-[#E8B65C]'
+                      : 'text-[#B9B7AA] hover:text-[#F8F1E5] hover:bg-[#10251B]/60'
                     }`}
                 >
                   {item.isSpecial && <Sparkles className="w-3.5 h-3.5 text-[#E8B65C] animate-pulse" />}
@@ -192,8 +192,8 @@ export const Navbar = ({
                   key={item.path}
                   onClick={() => handleNav(item.path)}
                   className={`w-full text-left px-4 py-2.5 rounded-xl text-sm font-medium transition flex items-center justify-between ${isActive
-                      ? 'bg-[#10251B] text-[#E8B65C] font-semibold border-l-2 border-[#E8B65C]'
-                      : 'text-[#B9B7AA] hover:text-[#F8F1E5] hover:bg-[#10251B]/50'
+                    ? 'bg-[#10251B] text-[#E8B65C] font-semibold border-l-2 border-[#E8B65C]'
+                    : 'text-[#B9B7AA] hover:text-[#F8F1E5] hover:bg-[#10251B]/50'
                     }`}
                 >
                   <span>{item.label}</span>

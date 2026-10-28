@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Users, Plus, Heart, MapPin, Calendar, Camera, Send, X, AlertCircle, CheckCircle2, MessageSquare, Flag } from 'lucide-react';
+import { Users, Plus, Heart, MapPin, Calendar, Camera, Send, X, AlertCircle, CheckCircle2, MessageSquare, Flag, Upload, Loader2 } from 'lucide-react';
+import { api } from '../../services/api';
 
 export const CommunitySection = ({
   communityPosts,
@@ -14,8 +15,29 @@ export const CommunitySection = ({
   const [description, setDescription] = useState('');
   const [bestTime, setBestTime] = useState('October to March');
   const [photoUrl, setPhotoUrl] = useState('https://images.unsplash.com/photo-1629853683515-5c1cf7ca2687?auto=format&fit=crop&w=800&q=80');
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState(null);
   const [statusMsg, setStatusMsg] = useState(null);
   const [submitting, setSubmitting] = useState(false);
+
+  const handleFileUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    setUploadError(null);
+
+    try {
+      const res = await api.uploadImage(file, 'trail-india/community');
+      if (res.secure_url) {
+        setPhotoUrl(res.secure_url);
+      }
+    } catch (err) {
+      setUploadError(err.message || 'Upload to Cloudinary failed');
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   const categories = ['All', 'Hidden Gem', 'Local Tip', 'Photography Spot', 'Food Recommendation', 'Festival Experience'];
   const [selectedFilter, setSelectedFilter] = useState('All');
@@ -261,13 +283,54 @@ export const CommunitySection = ({
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-[#B9B7AA] mb-1">Photograph Image URL</label>
-                <input
-                  type="url"
-                  value={photoUrl}
-                  onChange={(e) => setPhotoUrl(e.target.value)}
-                  className="w-full bg-[#06110D] border border-[#263B2F] rounded-xl px-4 py-2.5 text-sm text-[#F8F1E5] focus:outline-none focus:border-[#E8B65C]"
-                />
+                <label className="block text-xs font-semibold text-[#B9B7AA] mb-1">Photograph (Upload to Cloudinary or Paste URL)</label>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <label className="cursor-pointer flex items-center justify-center gap-2 px-4 py-2.5 bg-[#1B3627] hover:bg-[#264A37] border border-[#263B2F] rounded-xl text-xs font-medium text-[#E8B65C] transition shrink-0">
+                      {isUploading ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin text-[#E8B65C]" />
+                          <span>Uploading to Cloudinary...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Upload className="w-4 h-4 text-[#E8B65C]" />
+                          <span>Choose Photo</span>
+                        </>
+                      )}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleFileUpload}
+                        disabled={isUploading}
+                      />
+                    </label>
+                    <input
+                      type="url"
+                      placeholder="Or paste image URL"
+                      value={photoUrl}
+                      onChange={(e) => setPhotoUrl(e.target.value)}
+                      className="w-full bg-[#06110D] border border-[#263B2F] rounded-xl px-4 py-2.5 text-xs text-[#F8F1E5] focus:outline-none focus:border-[#E8B65C]"
+                    />
+                  </div>
+
+                  {uploadError && (
+                    <p className="text-[11px] text-red-400 flex items-center gap-1">
+                      <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                      {uploadError}
+                    </p>
+                  )}
+
+                  {photoUrl && (
+                    <div className="relative h-24 w-full rounded-xl overflow-hidden border border-[#263B2F]">
+                      <img src={photoUrl} alt="Preview" className="w-full h-full object-cover" />
+                      <span className="absolute bottom-1 right-2 bg-black/70 text-[10px] text-[#E8B65C] px-2 py-0.5 rounded-full backdrop-blur-sm">
+                        Preview
+                      </span>
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div>

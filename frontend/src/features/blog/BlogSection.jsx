@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { api } from '../../services/api';
-import { PenTool, Bookmark, Eye, Clock, Tag, CheckCircle2, AlertCircle, X, Search } from 'lucide-react';
+import { PenTool, Bookmark, Eye, Clock, Tag, CheckCircle2, AlertCircle, X, Search, Upload, Loader2 } from 'lucide-react';
 
 export const BlogSection = ({
   posts,
@@ -18,7 +18,28 @@ export const BlogSection = ({
   const [category, setCategory] = useState('Travel Guides');
   const [excerpt, setExcerpt] = useState('');
   const [coverImage, setCoverImage] = useState('https://images.unsplash.com/photo-1600100397608-f010f4439c2c?auto=format&fit=crop&w=1200&q=80');
+  const [isUploadingCover, setIsUploadingCover] = useState(false);
+  const [coverUploadError, setCoverUploadError] = useState(null);
   const [content, setContent] = useState('');
+
+  const handleCoverUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploadingCover(true);
+    setCoverUploadError(null);
+
+    try {
+      const res = await api.uploadImage(file, 'trail-india/blog');
+      if (res.secure_url) {
+        setCoverImage(res.secure_url);
+      }
+    } catch (err) {
+      setCoverUploadError(err.message || 'Upload to Cloudinary failed');
+    } finally {
+      setIsUploadingCover(false);
+    }
+  };
   const [tagsInput, setTagsInput] = useState('India, Heritage, Architecture');
   const [submitting, setSubmitting] = useState(false);
   const [editorMsg, setEditorMsg] = useState(null);
@@ -352,13 +373,44 @@ export const BlogSection = ({
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-[#B9B7AA] mb-1">Cover Image URL</label>
-                  <input
-                    type="url"
-                    value={coverImage}
-                    onChange={(e) => setCoverImage(e.target.value)}
-                    className="w-full bg-[#06110D] border border-[#263B2F] rounded-xl px-4 py-2.5 text-sm text-[#F8F1E5] focus:outline-none focus:border-[#E8B65C]"
-                  />
+                  <label className="block text-xs font-medium text-[#B9B7AA] mb-1">Cover Image (Cloudinary Upload or URL)</label>
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <label className="cursor-pointer flex items-center justify-center gap-2 px-3 py-2.5 bg-[#1B3627] hover:bg-[#264A37] border border-[#263B2F] rounded-xl text-xs font-medium text-[#E8B65C] transition shrink-0">
+                        {isUploadingCover ? (
+                          <>
+                            <Loader2 className="w-4 h-4 animate-spin text-[#E8B65C]" />
+                            <span>Uploading...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Upload className="w-4 h-4 text-[#E8B65C]" />
+                            <span>Upload Cover</span>
+                          </>
+                        )}
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={handleCoverUpload}
+                          disabled={isUploadingCover}
+                        />
+                      </label>
+                      <input
+                        type="url"
+                        placeholder="Or paste image URL"
+                        value={coverImage}
+                        onChange={(e) => setCoverImage(e.target.value)}
+                        className="w-full bg-[#06110D] border border-[#263B2F] rounded-xl px-3 py-2.5 text-xs text-[#F8F1E5] focus:outline-none focus:border-[#E8B65C]"
+                      />
+                    </div>
+                    {coverUploadError && (
+                      <p className="text-[11px] text-red-400 flex items-center gap-1">
+                        <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                        {coverUploadError}
+                      </p>
+                    )}
+                  </div>
                 </div>
               </div>
 

@@ -313,3 +313,21 @@ test('Trips workflow (create, list, update, delete)', async () => {
   assert.equal(delRes.status, 200);
 });
 
+test('POST /api/v1/upload handles unconfigured Cloudinary or missing file gracefully', async () => {
+  const res = await fetch(`${baseUrl}/api/v1/upload`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${authToken}`,
+    },
+    body: JSON.stringify({ image: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==' }),
+  });
+
+  // Either 503 (Cloudinary not configured) or 201 (if test environment had credentials)
+  assert.ok([503, 201].includes(res.status));
+  const data = await res.json();
+  if (res.status === 503) {
+    assert.equal(data.error, 'Cloudinary is not configured');
+  }
+});
+

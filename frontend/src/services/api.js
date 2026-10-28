@@ -462,4 +462,32 @@ export const api = {
     localStorage.setItem('trail_india_trips', JSON.stringify(existing));
     return { success: true };
   },
+
+  // Cloudinary Photo Upload
+  async uploadImage(file, folder = 'trail-india') {
+    const formData = new FormData();
+    formData.append('file', file);
+    if (folder) {
+      formData.append('folder', folder);
+    }
+
+    const token = localStorage.getItem('trail_india_token');
+    const headers = {};
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const res = await fetch(`${API_BASE}/upload`, {
+      method: 'POST',
+      headers,
+      body: formData,
+    });
+
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      throw new Error(errData.message || errData.error || 'Failed to upload photo to Cloudinary');
+    }
+
+    return await res.json();
+  },
 };

@@ -13,6 +13,7 @@ import blogRouter from './routes/blog.js';
 import communityRouter from './routes/community.js';
 import favoritesRouter from './routes/favorites.js';
 import tripsRouter from './routes/trips.js';
+import uploadRouter from './routes/upload.js';
 
 import { notFoundHandler, errorHandler } from './middleware/errorHandler.js';
 
@@ -50,6 +51,7 @@ app.use('/api/v1/blog', blogRouter);
 app.use('/api/v1/community', communityRouter);
 app.use('/api/v1/favorites', favoritesRouter);
 app.use('/api/v1/trips', tripsRouter);
+app.use('/api/v1/upload', uploadRouter);
 
 // 404 & Error handlers
 app.use(notFoundHandler);

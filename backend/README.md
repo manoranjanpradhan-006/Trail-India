@@ -138,6 +138,27 @@ npm test
 - `PUT /api/v1/trips/:id` - Update itinerary
 - `DELETE /api/v1/trips/:id` - Delete itinerary
 
-### System
+### System & Upload
 - `GET /api/v1/health` - Health check status
+- `POST /api/v1/upload` - Upload single photo to Cloudinary (`multipart/form-data` with field `file`, `image`, or `photo`, or base64/URL JSON)
+- `POST /api/v1/upload/multiple` - Upload up to 5 photos simultaneously to Cloudinary (`multipart/form-data` with field `files`)
+
+---
+
+## Cloudinary Photo Upload Configuration
+
+1. Create a free account at [Cloudinary](https://cloudinary.com).
+2. Go to your **Dashboard** -> **API Keys**.
+3. Copy your **Cloud Name**, **API Key**, and **API Secret**.
+4. Add them to `backend/.env` (or root `.env`):
+   ```env
+   CLOUDINARY_CLOUD_NAME=your_cloud_name
+   CLOUDINARY_API_KEY=your_api_key
+   CLOUDINARY_API_SECRET=your_api_secret
+   ```
+   *Alternatively, you can provide the single `CLOUDINARY_URL`:*
+   ```env
+   CLOUDINARY_URL=cloudinary://<api_key>:<api_secret>@<cloud_name>
+   ```
+5. When users create blog posts or submit community hidden gems, they can directly click **"Choose Photo"** or **"Upload Cover"** to upload images straight to your Cloudinary cloud. Cloudinary automatically optimizes delivery format and image quality!
 

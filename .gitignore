@@ -1,0 +1,9 @@
+node_modules/
+.env
+.DS_Store
+dist/
+*.log
+backend/trail_india.db-shm
+backend/trail_india.db-wal
+backend/api.exe
+

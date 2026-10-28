@@ -1,12 +1,12 @@
 import jwt from 'jsonwebtoken';
 import { config } from '../config/index.js';
-import { getDatabase } from '../db/database.js';
+import { db } from '../db/database.js';
 
 export function generateToken(payload) {
   return jwt.sign(payload, config.jwtSecret, { expiresIn: config.jwtExpiresIn });
 }
 
-export function authenticateToken(req, res, next) {
+export async function authenticateToken(req, res, next) {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
 
@@ -16,13 +16,13 @@ export function authenticateToken(req, res, next) {
 
   try {
     const decoded = jwt.verify(token, config.jwtSecret);
-    const db = getDatabase();
-    const user = db.prepare(`
-      SELECT u.id, u.email, u.role, p.display_name, p.location, p.bio, p.avatar_url, p.is_local_contributor
-      FROM users u
-      LEFT JOIN user_profiles p ON u.id = p.user_id
-      WHERE u.id = ?
-    `).get(decoded.id);
+    const user = await db.getOne(
+      `SELECT u.id, u.email, u.role, p.display_name, p.location, p.bio, p.avatar_url, p.is_local_contributor
+       FROM users u
+       LEFT JOIN user_profiles p ON u.id = p.user_id
+       WHERE u.id = $1`,
+      [decoded.id]
+    );
 
     if (!user) {
       return res.status(401).json({ error: 'User no longer exists' });
@@ -47,7 +47,7 @@ export function authenticateToken(req, res, next) {
   }
 }
 
-export function optionalAuth(req, res, next) {
+export async function optionalAuth(req, res, next) {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
 
@@ -58,13 +58,13 @@ export function optionalAuth(req, res, next) {
 
   try {
     const decoded = jwt.verify(token, config.jwtSecret);
-    const db = getDatabase();
-    const user = db.prepare(`
-      SELECT u.id, u.email, u.role, p.display_name, p.location, p.bio, p.avatar_url, p.is_local_contributor
-      FROM users u
-      LEFT JOIN user_profiles p ON u.id = p.user_id
-      WHERE u.id = ?
-    `).get(decoded.id);
+    const user = await db.getOne(
+      `SELECT u.id, u.email, u.role, p.display_name, p.location, p.bio, p.avatar_url, p.is_local_contributor
+       FROM users u
+       LEFT JOIN user_profiles p ON u.id = p.user_id
+       WHERE u.id = $1`,
+      [decoded.id]
+    );
 
     if (user) {
       req.user = {
@@ -100,4 +100,3 @@ export function requireRole(allowedRoles = []) {
     next();
   };
 }
-

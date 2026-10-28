@@ -1,27 +1,28 @@
 import app from './app.js';
 import { config } from './config/index.js';
-import { getDatabase } from './db/database.js';
+import { getDatabase, db } from './db/database.js';
 import { runSeed } from './db/seed.js';
 
-function startServer() {
+async function startServer() {
   try {
-    // Initialize database
-    const db = getDatabase();
-    console.log(`[Database] SQLite connected at ${config.dbPath}`);
+    // Initialize database (Neon PostgreSQL or SQLite fallback)
+    await getDatabase();
 
     // Auto-seed if database is empty
-    const userCount = db.prepare('SELECT COUNT(*) as count FROM users').get().count;
+    const userRow = await db.getOne('SELECT COUNT(*) as count FROM users');
+    const userCount = Number(userRow?.count || 0);
+
     if (userCount === 0) {
       console.log('[Database] Database is empty. Running initial seed...');
-      runSeed();
+      await runSeed();
     }
 
     const server = app.listen(config.port, () => {
-      console.log(`===============================================`);
-      console.log(`  Trail India Backend API (Express & Node.js)   `);
-      console.log(`  Running on: http://localhost:${config.port}       `);
-      console.log(`  Environment: ${config.env}                     `);
-      console.log(`===============================================`);
+      console.log(`===================================================`);
+      console.log(`  Trail India API (Node.js & Express)              `);
+      console.log(`  Database: ${db.isPostgres() ? 'Neon PostgreSQL' : 'Local SQLite'} `);
+      console.log(`  URL: http://localhost:${config.port}                     `);
+      console.log(`===================================================`);
     });
 
     const shutdown = () => {
@@ -41,4 +42,3 @@ function startServer() {
 }
 
 startServer();
-

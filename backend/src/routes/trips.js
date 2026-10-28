@@ -1,5 +1,5 @@
 import express from 'express';
-import { getDatabase } from '../db/database.js';
+import { db } from '../db/database.js';
 import { safeJsonParse, generateId } from '../utils/helpers.js';
 import { authenticateToken } from '../middleware/auth.js';
 
@@ -15,14 +15,14 @@ function formatTrip(trip) {
 }
 
 // Get user trips
-router.get('/', authenticateToken, (req, res, next) => {
+router.get('/', authenticateToken, async (req, res, next) => {
   try {
-    const db = getDatabase();
-    const rows = db.prepare(`
-      SELECT * FROM trips
-      WHERE user_id = ?
-      ORDER BY created_at DESC
-    `).all(req.user.id);
+    const rows = await db.getAll(
+      `SELECT * FROM trips
+       WHERE user_id = $1
+       ORDER BY created_at DESC`,
+      [req.user.id]
+    );
 
     res.json(rows.map(formatTrip));
   } catch (err) {
@@ -31,12 +31,11 @@ router.get('/', authenticateToken, (req, res, next) => {
 });
 
 // Get single trip
-router.get('/:id', authenticateToken, (req, res, next) => {
+router.get('/:id', authenticateToken, async (req, res, next) => {
   try {
     const { id } = req.params;
-    const db = getDatabase();
 
-    const trip = db.prepare('SELECT * FROM trips WHERE id = ?').get(id);
+    const trip = await db.getOne('SELECT * FROM trips WHERE id = $1', [id]);
     if (!trip) {
       return res.status(404).json({ error: 'Trip not found' });
     }
@@ -52,7 +51,7 @@ router.get('/:id', authenticateToken, (req, res, next) => {
 });
 
 // Create new trip
-router.post('/', authenticateToken, (req, res, next) => {
+router.post('/', authenticateToken, async (req, res, next) => {
   try {
     const {
       title,
@@ -67,26 +66,26 @@ router.post('/', authenticateToken, (req, res, next) => {
       return res.status(400).json({ error: 'Trip title is required' });
     }
 
-    const db = getDatabase();
     const id = generateId('trip');
 
-    db.prepare(`
-      INSERT INTO trips (
+    await db.query(
+      `INSERT INTO trips (
         id, user_id, title, description, start_date, end_date,
         budget_estimate, itinerary_data
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    `).run(
-      id,
-      req.user.id,
-      title,
-      description,
-      start_date,
-      end_date,
-      Number(budget_estimate) || 0,
-      JSON.stringify(itinerary_data)
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+      [
+        id,
+        req.user.id,
+        title,
+        description,
+        start_date,
+        end_date,
+        Number(budget_estimate) || 0,
+        JSON.stringify(itinerary_data),
+      ]
     );
 
-    const created = db.prepare('SELECT * FROM trips WHERE id = ?').get(id);
+    const created = await db.getOne('SELECT * FROM trips WHERE id = $1', [id]);
     res.status(201).json(formatTrip(created));
   } catch (err) {
     next(err);
@@ -94,12 +93,11 @@ router.post('/', authenticateToken, (req, res, next) => {
 });
 
 // Update trip
-router.put('/:id', authenticateToken, (req, res, next) => {
+router.put('/:id', authenticateToken, async (req, res, next) => {
   try {
     const { id } = req.params;
-    const db = getDatabase();
 
-    const existing = db.prepare('SELECT * FROM trips WHERE id = ?').get(id);
+    const existing = await db.getOne('SELECT * FROM trips WHERE id = $1', [id]);
     if (!existing) {
       return res.status(404).json({ error: 'Trip not found' });
     }
@@ -110,27 +108,28 @@ router.put('/:id', authenticateToken, (req, res, next) => {
 
     const { title, description, start_date, end_date, budget_estimate, itinerary_data } = req.body;
 
-    db.prepare(`
-      UPDATE trips
-      SET title = COALESCE(?, title),
-          description = COALESCE(?, description),
-          start_date = COALESCE(?, start_date),
-          end_date = COALESCE(?, end_date),
-          budget_estimate = COALESCE(?, budget_estimate),
-          itinerary_data = COALESCE(?, itinerary_data),
-          updated_at = CURRENT_TIMESTAMP
-      WHERE id = ?
-    `).run(
-      title ?? null,
-      description ?? null,
-      start_date ?? null,
-      end_date ?? null,
-      budget_estimate !== undefined ? Number(budget_estimate) : null,
-      itinerary_data ? JSON.stringify(itinerary_data) : null,
-      id
+    await db.query(
+      `UPDATE trips
+       SET title = COALESCE($1, title),
+           description = COALESCE($2, description),
+           start_date = COALESCE($3, start_date),
+           end_date = COALESCE($4, end_date),
+           budget_estimate = COALESCE($5, budget_estimate),
+           itinerary_data = COALESCE($6, itinerary_data),
+           updated_at = CURRENT_TIMESTAMP
+       WHERE id = $7`,
+      [
+        title ?? null,
+        description ?? null,
+        start_date ?? null,
+        end_date ?? null,
+        budget_estimate !== undefined ? Number(budget_estimate) : null,
+        itinerary_data ? JSON.stringify(itinerary_data) : null,
+        id,
+      ]
     );
 
-    const updated = db.prepare('SELECT * FROM trips WHERE id = ?').get(id);
+    const updated = await db.getOne('SELECT * FROM trips WHERE id = $1', [id]);
     res.json(formatTrip(updated));
   } catch (err) {
     next(err);
@@ -138,12 +137,11 @@ router.put('/:id', authenticateToken, (req, res, next) => {
 });
 
 // Delete trip
-router.delete('/:id', authenticateToken, (req, res, next) => {
+router.delete('/:id', authenticateToken, async (req, res, next) => {
   try {
     const { id } = req.params;
-    const db = getDatabase();
 
-    const existing = db.prepare('SELECT * FROM trips WHERE id = ?').get(id);
+    const existing = await db.getOne('SELECT * FROM trips WHERE id = $1', [id]);
     if (!existing) {
       return res.status(404).json({ error: 'Trip not found' });
     }
@@ -152,7 +150,7 @@ router.delete('/:id', authenticateToken, (req, res, next) => {
       return res.status(403).json({ error: 'Not authorized to delete this trip' });
     }
 
-    db.prepare('DELETE FROM trips WHERE id = ?').run(id);
+    await db.query('DELETE FROM trips WHERE id = $1', [id]);
     res.json({ success: true, message: 'Trip deleted successfully' });
   } catch (err) {
     next(err);
@@ -160,4 +158,3 @@ router.delete('/:id', authenticateToken, (req, res, next) => {
 });
 
 export default router;
-

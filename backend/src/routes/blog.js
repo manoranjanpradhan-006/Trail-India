@@ -1,5 +1,5 @@
 import express from 'express';
-import { getDatabase } from '../db/database.js';
+import { db } from '../db/database.js';
 import { safeJsonParse, generateSlug, generateId } from '../utils/helpers.js';
 import { authenticateToken, optionalAuth } from '../middleware/auth.js';
 
@@ -16,10 +16,9 @@ function formatBlogPost(post) {
 }
 
 // Get blog posts
-router.get('/posts', optionalAuth, (req, res, next) => {
+router.get('/posts', optionalAuth, async (req, res, next) => {
   try {
     const { category, search, status = 'published', tag, destination_id } = req.query;
-    const db = getDatabase();
 
     let query = `
       SELECT b.*, COALESCE(p.display_name, b.author_name) as author_name, p.avatar_url
@@ -35,39 +34,40 @@ router.get('/posts', optionalAuth, (req, res, next) => {
         return res.json([]);
       }
       if (req.user.role !== 'admin') {
-        query += ' AND b.status = "draft" AND b.author_id = ?';
         params.push(req.user.id);
+        query += ` AND b.status = 'draft' AND b.author_id = $${params.length}`;
       } else {
-        query += ' AND b.status = "draft"';
+        query += " AND b.status = 'draft'";
       }
     } else if (status !== 'all') {
-      query += ' AND b.status = ?';
       params.push(status);
+      query += ` AND b.status = $${params.length}`;
     }
 
     if (category && category !== 'all') {
-      query += ' AND b.category = ?';
       params.push(category);
+      query += ` AND b.category = $${params.length}`;
     }
 
     if (destination_id) {
-      query += ' AND b.destination_id = ?';
       params.push(destination_id);
+      query += ` AND b.destination_id = $${params.length}`;
     }
 
     if (tag) {
-      query += ' AND b.tags LIKE ?';
       params.push(`%${tag}%`);
+      query += ` AND b.tags ILIKE $${params.length}`;
     }
 
     if (search) {
-      query += ' AND (b.title LIKE ? OR b.excerpt LIKE ? OR b.content LIKE ?)';
       const s = `%${search}%`;
       params.push(s, s, s);
+      const idx = params.length - 2;
+      query += ` AND (b.title ILIKE $${idx} OR b.excerpt ILIKE $${idx + 1} OR b.content ILIKE $${idx + 2})`;
     }
 
     query += ' ORDER BY b.created_at DESC';
-    const rows = db.prepare(query).all(...params);
+    const rows = await db.getAll(query, params);
     res.json(rows.map(formatBlogPost));
   } catch (err) {
     next(err);
@@ -75,24 +75,24 @@ router.get('/posts', optionalAuth, (req, res, next) => {
 });
 
 // Get single blog post by slug or id
-router.get('/posts/:slug', (req, res, next) => {
+router.get('/posts/:slug', async (req, res, next) => {
   try {
     const { slug } = req.params;
-    const db = getDatabase();
 
-    const post = db.prepare(`
-      SELECT b.*, COALESCE(p.display_name, b.author_name) as author_name, p.avatar_url, p.bio as author_bio
-      FROM blog_posts b
-      LEFT JOIN user_profiles p ON b.author_id = p.user_id
-      WHERE b.slug = ? OR b.id = ?
-    `).get(slug, slug);
+    const post = await db.getOne(
+      `SELECT b.*, COALESCE(p.display_name, b.author_name) as author_name, p.avatar_url, p.bio as author_bio
+       FROM blog_posts b
+       LEFT JOIN user_profiles p ON b.author_id = p.user_id
+       WHERE b.slug = $1 OR b.id = $2`,
+      [slug, slug]
+    );
 
     if (!post) {
       return res.status(404).json({ error: 'Post not found' });
     }
 
     // Increment view count
-    db.prepare('UPDATE blog_posts SET views_count = views_count + 1 WHERE id = ?').run(post.id);
+    await db.query('UPDATE blog_posts SET views_count = views_count + 1 WHERE id = $1', [post.id]);
     post.views_count = (Number(post.views_count) || 0) + 1;
 
     res.json(formatBlogPost(post));
@@ -102,7 +102,7 @@ router.get('/posts/:slug', (req, res, next) => {
 });
 
 // Create blog post
-router.post('/posts', authenticateToken, (req, res, next) => {
+router.post('/posts', authenticateToken, async (req, res, next) => {
   try {
     const {
       title,
@@ -119,12 +119,11 @@ router.post('/posts', authenticateToken, (req, res, next) => {
       return res.status(400).json({ error: 'Title and content are required' });
     }
 
-    const db = getDatabase();
     const id = generateId('story');
     let slug = generateSlug(title);
 
     // Ensure unique slug
-    const existing = db.prepare('SELECT id FROM blog_posts WHERE slug = ?').get(slug);
+    const existing = await db.getOne('SELECT id FROM blog_posts WHERE slug = $1', [slug]);
     if (existing) {
       slug = `${slug}-${Date.now().toString().slice(-4)}`;
     }
@@ -134,30 +133,31 @@ router.post('/posts', authenticateToken, (req, res, next) => {
     const authorName = req.user.profile?.display_name || req.user.email.split('@')[0];
     const publishedDate = 'Just now';
 
-    db.prepare(`
-      INSERT INTO blog_posts (
+    await db.query(
+      `INSERT INTO blog_posts (
         id, author_id, author_name, destination_id, title, slug, excerpt,
         cover_image, content, category, tags, status, read_time_minutes,
         views_count, published_date
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?)
-    `).run(
-      id,
-      req.user.id,
-      authorName,
-      destination_id,
-      title,
-      slug,
-      generatedExcerpt,
-      cover_image,
-      content,
-      category,
-      JSON.stringify(tags),
-      status,
-      readTime,
-      publishedDate
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, 1, $14)`,
+      [
+        id,
+        req.user.id,
+        authorName,
+        destination_id,
+        title,
+        slug,
+        generatedExcerpt,
+        cover_image,
+        content,
+        category,
+        JSON.stringify(tags),
+        status,
+        readTime,
+        publishedDate,
+      ]
     );
 
-    const created = db.prepare('SELECT * FROM blog_posts WHERE id = ?').get(id);
+    const created = await db.getOne('SELECT * FROM blog_posts WHERE id = $1', [id]);
     res.status(201).json(formatBlogPost(created));
   } catch (err) {
     next(err);
@@ -165,12 +165,11 @@ router.post('/posts', authenticateToken, (req, res, next) => {
 });
 
 // Edit blog post
-router.patch('/posts/:id', authenticateToken, (req, res, next) => {
+router.patch('/posts/:id', authenticateToken, async (req, res, next) => {
   try {
     const { id } = req.params;
-    const db = getDatabase();
 
-    const existing = db.prepare('SELECT * FROM blog_posts WHERE id = ?').get(id);
+    const existing = await db.getOne('SELECT * FROM blog_posts WHERE id = $1', [id]);
     if (!existing) {
       return res.status(404).json({ error: 'Post not found' });
     }
@@ -181,29 +180,30 @@ router.patch('/posts/:id', authenticateToken, (req, res, next) => {
 
     const { title, category, excerpt, cover_image, content, tags, status } = req.body;
 
-    db.prepare(`
-      UPDATE blog_posts
-      SET title = COALESCE(?, title),
-          category = COALESCE(?, category),
-          excerpt = COALESCE(?, excerpt),
-          cover_image = COALESCE(?, cover_image),
-          content = COALESCE(?, content),
-          tags = COALESCE(?, tags),
-          status = COALESCE(?, status),
-          updated_at = CURRENT_TIMESTAMP
-      WHERE id = ?
-    `).run(
-      title ?? null,
-      category ?? null,
-      excerpt ?? null,
-      cover_image ?? null,
-      content ?? null,
-      tags ? JSON.stringify(tags) : null,
-      status ?? null,
-      id
+    await db.query(
+      `UPDATE blog_posts
+       SET title = COALESCE($1, title),
+           category = COALESCE($2, category),
+           excerpt = COALESCE($3, excerpt),
+           cover_image = COALESCE($4, cover_image),
+           content = COALESCE($5, content),
+           tags = COALESCE($6, tags),
+           status = COALESCE($7, status),
+           updated_at = CURRENT_TIMESTAMP
+       WHERE id = $8`,
+      [
+        title ?? null,
+        category ?? null,
+        excerpt ?? null,
+        cover_image ?? null,
+        content ?? null,
+        tags ? JSON.stringify(tags) : null,
+        status ?? null,
+        id,
+      ]
     );
 
-    const updated = db.prepare('SELECT * FROM blog_posts WHERE id = ?').get(id);
+    const updated = await db.getOne('SELECT * FROM blog_posts WHERE id = $1', [id]);
     res.json(formatBlogPost(updated));
   } catch (err) {
     next(err);
@@ -211,12 +211,11 @@ router.patch('/posts/:id', authenticateToken, (req, res, next) => {
 });
 
 // Delete blog post
-router.delete('/posts/:id', authenticateToken, (req, res, next) => {
+router.delete('/posts/:id', authenticateToken, async (req, res, next) => {
   try {
     const { id } = req.params;
-    const db = getDatabase();
 
-    const existing = db.prepare('SELECT * FROM blog_posts WHERE id = ?').get(id);
+    const existing = await db.getOne('SELECT * FROM blog_posts WHERE id = $1', [id]);
     if (!existing) {
       return res.status(404).json({ error: 'Post not found' });
     }
@@ -225,7 +224,7 @@ router.delete('/posts/:id', authenticateToken, (req, res, next) => {
       return res.status(403).json({ error: 'Not authorized to delete this post' });
     }
 
-    db.prepare('DELETE FROM blog_posts WHERE id = ?').run(id);
+    await db.query('DELETE FROM blog_posts WHERE id = $1', [id]);
     res.json({ success: true, message: 'Post deleted successfully' });
   } catch (err) {
     next(err);
@@ -233,16 +232,17 @@ router.delete('/posts/:id', authenticateToken, (req, res, next) => {
 });
 
 // Bookmark a post
-router.post('/posts/:id/bookmark', authenticateToken, (req, res, next) => {
+router.post('/posts/:id/bookmark', authenticateToken, async (req, res, next) => {
   try {
     const { id } = req.params;
-    const db = getDatabase();
 
     const bookmarkId = generateId('bm');
-    db.prepare(`
-      INSERT OR IGNORE INTO blog_bookmarks (id, user_id, post_id)
-      VALUES (?, ?, ?)
-    `).run(bookmarkId, req.user.id, id);
+    await db.query(
+      `INSERT INTO blog_bookmarks (id, user_id, post_id)
+       VALUES ($1, $2, $3)
+       ON CONFLICT (user_id, post_id) DO NOTHING`,
+      [bookmarkId, req.user.id, id]
+    );
 
     res.json({ success: true, message: 'Article bookmarked' });
   } catch (err) {
@@ -251,4 +251,3 @@ router.post('/posts/:id/bookmark', authenticateToken, (req, res, next) => {
 });
 
 export default router;
-

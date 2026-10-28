@@ -1,5 +1,5 @@
 import express from 'express';
-import { getDatabase } from '../db/database.js';
+import { db } from '../db/database.js';
 import { safeJsonParse, generateSlug, generateId } from '../utils/helpers.js';
 import { authenticateToken, requireRole } from '../middleware/auth.js';
 
@@ -17,56 +17,62 @@ function formatPlace(place) {
 }
 
 // Update place average rating and review count
-function updatePlaceStats(db, placeId) {
-  const stats = db.prepare(`
-    SELECT COUNT(*) as count, AVG(rating) as avg_rating
-    FROM reviews
-    WHERE place_id = ?
-  `).get(placeId);
+async function updatePlaceStats(placeId) {
+  const stats = await db.getOne(
+    `SELECT COUNT(*) as count, AVG(rating) as avg_rating
+     FROM reviews
+     WHERE place_id = $1`,
+    [placeId]
+  );
 
-  if (stats && stats.count > 0) {
-    const avg = Math.round(stats.avg_rating * 10) / 10;
-    db.prepare(`
-      UPDATE places
-      SET rating = ?, review_count = ?
-      WHERE id = ?
-    `).run(avg, stats.count, placeId);
+  if (stats && Number(stats.count) > 0) {
+    const avg = Math.round(Number(stats.avg_rating) * 10) / 10;
+    await db.query(
+      `UPDATE places
+       SET rating = $1, review_count = $2
+       WHERE id = $3`,
+      [avg, Number(stats.count), placeId]
+    );
   }
 }
 
 // Get places with filters
-router.get('/', (req, res, next) => {
+router.get('/', async (req, res, next) => {
   try {
     const { category, destination_id, search, featured, limit = 50, offset = 0 } = req.query;
-    const db = getDatabase();
 
     let query = 'SELECT * FROM places WHERE 1=1';
     const params = [];
 
     if (category && category !== 'all') {
-      query += ' AND category = ?';
       params.push(category);
+      query += ` AND category = $${params.length}`;
     }
 
     if (destination_id) {
-      query += ' AND destination_id = ?';
       params.push(destination_id);
+      query += ` AND destination_id = $${params.length}`;
     }
 
     if (featured === 'true' || featured === '1') {
-      query += ' AND is_featured = 1';
+      query += ' AND is_featured = TRUE';
     }
 
     if (search) {
-      query += ' AND (name LIKE ? OR description LIKE ? OR address LIKE ?)';
       const s = `%${search}%`;
       params.push(s, s, s);
+      const idx = params.length - 2;
+      query += ` AND (name ILIKE $${idx} OR description ILIKE $${idx + 1} OR address ILIKE $${idx + 2})`;
     }
 
-    query += ' ORDER BY is_featured DESC, rating DESC, name ASC LIMIT ? OFFSET ?';
-    params.push(Number(limit) || 50, Number(offset) || 0);
+    params.push(Number(limit) || 50);
+    const limitIdx = params.length;
+    params.push(Number(offset) || 0);
+    const offsetIdx = params.length;
 
-    const rows = db.prepare(query).all(...params);
+    query += ` ORDER BY is_featured DESC, rating DESC, name ASC LIMIT $${limitIdx} OFFSET $${offsetIdx}`;
+
+    const rows = await db.getAll(query, params);
     res.json(rows.map(formatPlace));
   } catch (err) {
     next(err);
@@ -74,12 +80,11 @@ router.get('/', (req, res, next) => {
 });
 
 // Get single place by id or slug
-router.get('/:id', (req, res, next) => {
+router.get('/:id', async (req, res, next) => {
   try {
     const { id } = req.params;
-    const db = getDatabase();
 
-    const place = db.prepare('SELECT * FROM places WHERE id = ? OR slug = ?').get(id, id);
+    const place = await db.getOne('SELECT * FROM places WHERE id = $1 OR slug = $2', [id, id]);
     if (!place) {
       return res.status(404).json({ error: 'Place not found' });
     }
@@ -91,23 +96,23 @@ router.get('/:id', (req, res, next) => {
 });
 
 // Get reviews for a place
-router.get('/:id/reviews', (req, res, next) => {
+router.get('/:id/reviews', async (req, res, next) => {
   try {
     const { id } = req.params;
-    const db = getDatabase();
 
-    const place = db.prepare('SELECT id FROM places WHERE id = ? OR slug = ?').get(id, id);
+    const place = await db.getOne('SELECT id FROM places WHERE id = $1 OR slug = $2', [id, id]);
     if (!place) {
       return res.status(404).json({ error: 'Place not found' });
     }
 
-    const reviews = db.prepare(`
-      SELECT r.*, COALESCE(p.display_name, r.author_name) as author_name, p.avatar_url
-      FROM reviews r
-      LEFT JOIN user_profiles p ON r.user_id = p.user_id
-      WHERE r.place_id = ?
-      ORDER BY r.created_at DESC
-    `).all(place.id);
+    const reviews = await db.getAll(
+      `SELECT r.*, COALESCE(p.display_name, r.author_name) as author_name, p.avatar_url
+       FROM reviews r
+       LEFT JOIN user_profiles p ON r.user_id = p.user_id
+       WHERE r.place_id = $1
+       ORDER BY r.created_at DESC`,
+      [place.id]
+    );
 
     res.json(reviews);
   } catch (err) {
@@ -116,7 +121,7 @@ router.get('/:id/reviews', (req, res, next) => {
 });
 
 // Create or update review for a place
-router.post('/:id/reviews', authenticateToken, (req, res, next) => {
+router.post('/:id/reviews', authenticateToken, async (req, res, next) => {
   try {
     const { id } = req.params;
     const { rating, title, comment, visit_date } = req.body;
@@ -130,8 +135,7 @@ router.post('/:id/reviews', authenticateToken, (req, res, next) => {
       return res.status(400).json({ error: 'Rating must be between 1 and 5' });
     }
 
-    const db = getDatabase();
-    const place = db.prepare('SELECT id FROM places WHERE id = ? OR slug = ?').get(id, id);
+    const place = await db.getOne('SELECT id FROM places WHERE id = $1 OR slug = $2', [id, id]);
     if (!place) {
       return res.status(404).json({ error: 'Place not found' });
     }
@@ -139,32 +143,34 @@ router.post('/:id/reviews', authenticateToken, (req, res, next) => {
     const authorName = req.user.profile?.display_name || req.user.email.split('@')[0];
     const reviewId = generateId('rev');
 
-    db.prepare(`
-      INSERT INTO reviews (id, place_id, user_id, author_name, rating, title, comment, visit_date, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
-      ON CONFLICT(user_id, place_id) DO UPDATE SET
-        rating = excluded.rating,
-        title = excluded.title,
-        comment = excluded.comment,
-        visit_date = excluded.visit_date,
-        updated_at = CURRENT_TIMESTAMP
-    `).run(
-      reviewId,
-      place.id,
-      req.user.id,
-      authorName,
-      numRating,
-      title,
-      comment,
-      visit_date || 'Recent'
+    await db.query(
+      `INSERT INTO reviews (id, place_id, user_id, author_name, rating, title, comment, visit_date, updated_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, CURRENT_TIMESTAMP)
+       ON CONFLICT(user_id, place_id) DO UPDATE SET
+         rating = EXCLUDED.rating,
+         title = EXCLUDED.title,
+         comment = EXCLUDED.comment,
+         visit_date = EXCLUDED.visit_date,
+         updated_at = CURRENT_TIMESTAMP`,
+      [
+        reviewId,
+        place.id,
+        req.user.id,
+        authorName,
+        numRating,
+        title,
+        comment,
+        visit_date || 'Recent',
+      ]
     );
 
     // Update aggregated rating
-    updatePlaceStats(db, place.id);
+    await updatePlaceStats(place.id);
 
-    const savedReview = db.prepare(`
-      SELECT * FROM reviews WHERE place_id = ? AND user_id = ?
-    `).get(place.id, req.user.id);
+    const savedReview = await db.getOne(
+      `SELECT * FROM reviews WHERE place_id = $1 AND user_id = $2`,
+      [place.id, req.user.id]
+    );
 
     res.status(201).json(savedReview);
   } catch (err) {
@@ -173,7 +179,7 @@ router.post('/:id/reviews', authenticateToken, (req, res, next) => {
 });
 
 // Create place (admin / contributor)
-router.post('/', authenticateToken, requireRole(['admin', 'contributor']), (req, res, next) => {
+router.post('/', authenticateToken, requireRole(['admin', 'contributor']), async (req, res, next) => {
   try {
     const {
       destination_id,
@@ -195,35 +201,35 @@ router.post('/', authenticateToken, requireRole(['admin', 'contributor']), (req,
       return res.status(400).json({ error: 'Name, category, description, and image_url are required' });
     }
 
-    const db = getDatabase();
     const id = generateId('plc');
     const slug = generateSlug(name);
 
-    db.prepare(`
-      INSERT INTO places (
+    await db.query(
+      `INSERT INTO places (
         id, destination_id, destination_name, name, slug, category, description,
         address, latitude, longitude, entry_fee, opening_hours, image_url,
         highlights, is_featured, rating, review_count
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 4.8, 0)
-    `).run(
-      id,
-      destination_id || null,
-      destination_name,
-      name,
-      slug,
-      category,
-      description,
-      address,
-      Number(latitude) || 0,
-      Number(longitude) || 0,
-      entry_fee,
-      opening_hours,
-      image_url,
-      JSON.stringify(highlights),
-      is_featured ? 1 : 0
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, 4.8, 0)`,
+      [
+        id,
+        destination_id || null,
+        destination_name,
+        name,
+        slug,
+        category,
+        description,
+        address,
+        Number(latitude) || 0,
+        Number(longitude) || 0,
+        entry_fee,
+        opening_hours,
+        image_url,
+        JSON.stringify(highlights),
+        Boolean(is_featured),
+      ]
     );
 
-    const created = db.prepare('SELECT * FROM places WHERE id = ?').get(id);
+    const created = await db.getOne('SELECT * FROM places WHERE id = $1', [id]);
     res.status(201).json(formatPlace(created));
   } catch (err) {
     next(err);
@@ -231,4 +237,3 @@ router.post('/', authenticateToken, requireRole(['admin', 'contributor']), (req,
 });
 
 export default router;
-

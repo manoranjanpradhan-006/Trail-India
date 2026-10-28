@@ -1,37 +1,37 @@
 import express from 'express';
-import { getDatabase } from '../db/database.js';
+import { db } from '../db/database.js';
 import { generateId } from '../utils/helpers.js';
 import { authenticateToken, requireRole } from '../middleware/auth.js';
 
 const router = express.Router();
 
 // Get all experiences
-router.get('/', (req, res, next) => {
+router.get('/', async (req, res, next) => {
   try {
     const { category, state, search } = req.query;
-    const db = getDatabase();
 
     let query = 'SELECT * FROM experiences WHERE 1=1';
     const params = [];
 
     if (category && category !== 'all') {
-      query += ' AND category = ?';
       params.push(category);
+      query += ` AND category = $${params.length}`;
     }
 
     if (state && state !== 'all') {
-      query += ' AND state = ?';
       params.push(state);
+      query += ` AND state = $${params.length}`;
     }
 
     if (search) {
-      query += ' AND (title LIKE ? OR location LIKE ? OR description LIKE ?)';
       const s = `%${search}%`;
       params.push(s, s, s);
+      const idx = params.length - 2;
+      query += ` AND (title ILIKE $${idx} OR location ILIKE $${idx + 1} OR description ILIKE $${idx + 2})`;
     }
 
     query += ' ORDER BY rating DESC';
-    const rows = db.prepare(query).all(...params);
+    const rows = await db.getAll(query, params);
     res.json(rows);
   } catch (err) {
     next(err);
@@ -39,12 +39,11 @@ router.get('/', (req, res, next) => {
 });
 
 // Get single experience
-router.get('/:id', (req, res, next) => {
+router.get('/:id', async (req, res, next) => {
   try {
     const { id } = req.params;
-    const db = getDatabase();
 
-    const exp = db.prepare('SELECT * FROM experiences WHERE id = ?').get(id);
+    const exp = await db.getOne('SELECT * FROM experiences WHERE id = $1', [id]);
     if (!exp) {
       return res.status(404).json({ error: 'Experience not found' });
     }
@@ -56,7 +55,7 @@ router.get('/:id', (req, res, next) => {
 });
 
 // Create experience (admin / contributor)
-router.post('/', authenticateToken, requireRole(['admin', 'contributor']), (req, res, next) => {
+router.post('/', authenticateToken, requireRole(['admin', 'contributor']), async (req, res, next) => {
   try {
     const {
       title,
@@ -75,29 +74,29 @@ router.post('/', authenticateToken, requireRole(['admin', 'contributor']), (req,
       return res.status(400).json({ error: 'Missing required experience details' });
     }
 
-    const db = getDatabase();
     const id = generateId('exp');
 
-    db.prepare(`
-      INSERT INTO experiences (
+    await db.query(
+      `INSERT INTO experiences (
         id, title, location, state, category, duration, difficulty,
         price_estimate, rating, image_url, description
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `).run(
-      id,
-      title,
-      location,
-      state || 'India',
-      category,
-      duration,
-      difficulty,
-      price_estimate,
-      Number(rating) || 4.8,
-      image_url,
-      description
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
+      [
+        id,
+        title,
+        location,
+        state || 'India',
+        category,
+        duration,
+        difficulty,
+        price_estimate,
+        Number(rating) || 4.8,
+        image_url,
+        description,
+      ]
     );
 
-    const created = db.prepare('SELECT * FROM experiences WHERE id = ?').get(id);
+    const created = await db.getOne('SELECT * FROM experiences WHERE id = $1', [id]);
     res.status(201).json(created);
   } catch (err) {
     next(err);
@@ -105,4 +104,3 @@ router.post('/', authenticateToken, requireRole(['admin', 'contributor']), (req,
 });
 
 export default router;
-

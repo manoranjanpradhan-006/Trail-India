@@ -1,5 +1,5 @@
 import express from 'express';
-import { getDatabase } from '../db/database.js';
+import { db } from '../db/database.js';
 import { safeJsonParse, generateId } from '../utils/helpers.js';
 import { authenticateToken, requireRole } from '../middleware/auth.js';
 
@@ -14,32 +14,32 @@ function formatFood(item) {
 }
 
 // Get all food items
-router.get('/', (req, res, next) => {
+router.get('/', async (req, res, next) => {
   try {
     const { category, state, search } = req.query;
-    const db = getDatabase();
 
     let query = 'SELECT * FROM foods WHERE 1=1';
     const params = [];
 
     if (category && category !== 'all') {
-      query += ' AND category = ?';
       params.push(category);
+      query += ` AND category = $${params.length}`;
     }
 
     if (state && state !== 'all') {
-      query += ' AND state = ?';
       params.push(state);
+      query += ` AND state = $${params.length}`;
     }
 
     if (search) {
-      query += ' AND (name LIKE ? OR region LIKE ? OR description LIKE ? OR tagline LIKE ?)';
       const s = `%${search}%`;
       params.push(s, s, s, s);
+      const idx = params.length - 3;
+      query += ` AND (name ILIKE $${idx} OR region ILIKE $${idx + 1} OR description ILIKE $${idx + 2} OR tagline ILIKE $${idx + 3})`;
     }
 
     query += ' ORDER BY name ASC';
-    const rows = db.prepare(query).all(...params);
+    const rows = await db.getAll(query, params);
     res.json(rows.map(formatFood));
   } catch (err) {
     next(err);
@@ -47,12 +47,11 @@ router.get('/', (req, res, next) => {
 });
 
 // Get single food item
-router.get('/:id', (req, res, next) => {
+router.get('/:id', async (req, res, next) => {
   try {
     const { id } = req.params;
-    const db = getDatabase();
 
-    const item = db.prepare('SELECT * FROM foods WHERE id = ?').get(id);
+    const item = await db.getOne('SELECT * FROM foods WHERE id = $1', [id]);
     if (!item) {
       return res.status(404).json({ error: 'Food item not found' });
     }
@@ -64,7 +63,7 @@ router.get('/:id', (req, res, next) => {
 });
 
 // Create food item (admin / contributor)
-router.post('/', authenticateToken, requireRole(['admin', 'contributor']), (req, res, next) => {
+router.post('/', authenticateToken, requireRole(['admin', 'contributor']), async (req, res, next) => {
   try {
     const {
       name,
@@ -83,29 +82,29 @@ router.post('/', authenticateToken, requireRole(['admin', 'contributor']), (req,
       return res.status(400).json({ error: 'Missing required food fields' });
     }
 
-    const db = getDatabase();
     const id = generateId('food');
 
-    db.prepare(`
-      INSERT INTO foods (
+    await db.query(
+      `INSERT INTO foods (
         id, name, region, state, category, tagline, image_url, description,
         cultural_background, key_ingredients, where_to_try
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `).run(
-      id,
-      name,
-      region,
-      state,
-      category,
-      tagline,
-      image_url,
-      description,
-      cultural_background,
-      JSON.stringify(key_ingredients),
-      where_to_try
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
+      [
+        id,
+        name,
+        region,
+        state,
+        category,
+        tagline,
+        image_url,
+        description,
+        cultural_background,
+        JSON.stringify(key_ingredients),
+        where_to_try,
+      ]
     );
 
-    const created = db.prepare('SELECT * FROM foods WHERE id = ?').get(id);
+    const created = await db.getOne('SELECT * FROM foods WHERE id = $1', [id]);
     res.status(201).json(formatFood(created));
   } catch (err) {
     next(err);
@@ -113,4 +112,3 @@ router.post('/', authenticateToken, requireRole(['admin', 'contributor']), (req,
 });
 
 export default router;
-

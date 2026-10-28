@@ -1,5 +1,5 @@
 import express from 'express';
-import { getDatabase } from '../db/database.js';
+import { db } from '../db/database.js';
 import { safeJsonParse, generateSlug, generateId } from '../utils/helpers.js';
 import { authenticateToken, requireRole } from '../middleware/auth.js';
 
@@ -14,27 +14,27 @@ function formatDestination(dest) {
 }
 
 // Get all destinations
-router.get('/', (req, res, next) => {
+router.get('/', async (req, res, next) => {
   try {
     const { category, search } = req.query;
-    const db = getDatabase();
 
     let query = 'SELECT * FROM destinations WHERE 1=1';
     const params = [];
 
     if (category && category !== 'all') {
-      query += ' AND category = ?';
       params.push(category);
+      query += ` AND category = $${params.length}`;
     }
 
     if (search) {
-      query += ' AND (name LIKE ? OR description LIKE ? OR state LIKE ? OR district LIKE ?)';
       const s = `%${search}%`;
       params.push(s, s, s, s);
+      const idx = params.length - 3;
+      query += ` AND (name ILIKE $${idx} OR description ILIKE $${idx + 1} OR state ILIKE $${idx + 2} OR district ILIKE $${idx + 3})`;
     }
 
     query += ' ORDER BY name ASC';
-    const rows = db.prepare(query).all(...params);
+    const rows = await db.getAll(query, params);
     res.json(rows.map(formatDestination));
   } catch (err) {
     next(err);
@@ -42,19 +42,18 @@ router.get('/', (req, res, next) => {
 });
 
 // Get destination by slug or id
-router.get('/:slug', (req, res, next) => {
+router.get('/:slug', async (req, res, next) => {
   try {
     const { slug } = req.params;
-    const db = getDatabase();
 
-    const dest = db.prepare('SELECT * FROM destinations WHERE slug = ? OR id = ?').get(slug, slug);
+    const dest = await db.getOne('SELECT * FROM destinations WHERE slug = $1 OR id = $2', [slug, slug]);
     if (!dest) {
       return res.status(404).json({ error: 'Destination not found' });
     }
 
-    // Related places
-    const places = db.prepare('SELECT * FROM places WHERE destination_id = ?').all(dest.id);
-    const festivals = db.prepare('SELECT * FROM festivals WHERE destination_id = ?').all(dest.id);
+    // Related places and festivals
+    const places = await db.getAll('SELECT * FROM places WHERE destination_id = $1', [dest.id]);
+    const festivals = await db.getAll('SELECT * FROM festivals WHERE destination_id = $1', [dest.id]);
 
     res.json({
       ...formatDestination(dest),
@@ -67,7 +66,7 @@ router.get('/:slug', (req, res, next) => {
 });
 
 // Create new destination (admin / contributor)
-router.post('/', authenticateToken, requireRole(['admin', 'contributor']), (req, res, next) => {
+router.post('/', authenticateToken, requireRole(['admin', 'contributor']), async (req, res, next) => {
   try {
     const {
       name,
@@ -91,37 +90,37 @@ router.post('/', authenticateToken, requireRole(['admin', 'contributor']), (req,
       return res.status(400).json({ error: 'Name and description are required' });
     }
 
-    const db = getDatabase();
     const id = generateId('dest');
     const slug = generateSlug(name);
 
-    db.prepare(`
-      INSERT INTO destinations (
+    await db.query(
+      `INSERT INTO destinations (
         id, name, slug, state, district, tagline, description, overview, banner_image,
         best_time_to_visit, weather_info, how_to_reach, latitude, longitude, category,
         estimated_budget, highlights, place_count
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)
-    `).run(
-      id,
-      name,
-      slug,
-      state,
-      district,
-      tagline,
-      description,
-      overview,
-      banner_image,
-      best_time_to_visit,
-      weather_info,
-      how_to_reach,
-      Number(latitude) || 0,
-      Number(longitude) || 0,
-      category,
-      estimated_budget,
-      JSON.stringify(highlights)
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, 0)`,
+      [
+        id,
+        name,
+        slug,
+        state,
+        district,
+        tagline,
+        description,
+        overview,
+        banner_image,
+        best_time_to_visit,
+        weather_info,
+        how_to_reach,
+        Number(latitude) || 0,
+        Number(longitude) || 0,
+        category,
+        estimated_budget,
+        JSON.stringify(highlights),
+      ]
     );
 
-    const created = db.prepare('SELECT * FROM destinations WHERE id = ?').get(id);
+    const created = await db.getOne('SELECT * FROM destinations WHERE id = $1', [id]);
     res.status(201).json(formatDestination(created));
   } catch (err) {
     next(err);
@@ -129,4 +128,3 @@ router.post('/', authenticateToken, requireRole(['admin', 'contributor']), (req,
 });
 
 export default router;
-

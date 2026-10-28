@@ -1,6 +1,27 @@
 # Trail India - Node.js Express Backend
 
-Production-ready REST API for Trail India built with **Node.js**, **Express**, and **SQLite**.
+Production-ready REST API for Trail India built with **Node.js**, **Express**, and **PostgreSQL (Neon)**.
+
+---
+
+## Neon PostgreSQL Configuration
+
+1. Create a free project at [Neon (neon.tech)](https://neon.tech).
+2. In the Neon Console dashboard, copy the **Connection string** (Pooled or Direct, e.g.):
+   ```
+   postgresql://neondb_owner:YOUR_PASSWORD@ep-sample-123456-pooler.us-east-2.aws.neon.tech/neondb?sslmode=require
+   ```
+3. Add it to `backend/.env` (or root `.env`):
+   ```env
+   DATABASE_URL=postgresql://neondb_owner:YOUR_PASSWORD@ep-sample-123456-pooler.us-east-2.aws.neon.tech/neondb?sslmode=require
+   ```
+4. Run the database seeder to create all PostgreSQL tables and populate initial curated data:
+   ```bash
+   npm run seed
+   ```
+   *(Note: The server also auto-creates all tables and seeds the database automatically on first startup).*
+
+*(If `DATABASE_URL` is omitted, the backend automatically uses the local SQLite fallback for offline development).*
 
 ---
 

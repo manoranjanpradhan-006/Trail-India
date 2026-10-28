@@ -3,15 +3,13 @@ import assert from 'node:assert/strict';
 import app from '../src/app.js';
 import { runSeed } from '../src/db/seed.js';
 
-// Setup database before tests
-runSeed();
-
 let server;
 let baseUrl;
 let authToken = '';
 let testUserId = '';
 
 test.before(async () => {
+  await runSeed();
   return new Promise((resolve) => {
     // Listen on ephemeral port (0) for testing
     server = app.listen(0, () => {

@@ -1,23 +1,23 @@
 import express from 'express';
-import { getDatabase } from '../db/database.js';
+import { db } from '../db/database.js';
 import { generateId } from '../utils/helpers.js';
 import { authenticateToken } from '../middleware/auth.js';
 
 const router = express.Router();
 
 // Get user's favorites
-router.get('/', authenticateToken, (req, res, next) => {
+router.get('/', authenticateToken, async (req, res, next) => {
   try {
-    const db = getDatabase();
-    const rows = db.prepare(`
-      SELECT f.id, f.place_id, f.created_at,
-             p.name, p.slug, p.category, p.image_url, p.rating, p.review_count,
-             p.destination_name, p.address
-      FROM favorites f
-      JOIN places p ON f.place_id = p.id
-      WHERE f.user_id = ?
-      ORDER BY f.created_at DESC
-    `).all(req.user.id);
+    const rows = await db.getAll(
+      `SELECT f.id, f.place_id, f.created_at,
+              p.name, p.slug, p.category, p.image_url, p.rating, p.review_count,
+              p.destination_name, p.address
+       FROM favorites f
+       JOIN places p ON f.place_id = p.id
+       WHERE f.user_id = $1
+       ORDER BY f.created_at DESC`,
+      [req.user.id]
+    );
 
     res.json(rows);
   } catch (err) {
@@ -26,20 +26,20 @@ router.get('/', authenticateToken, (req, res, next) => {
 });
 
 // Add favorite place
-router.post('/', authenticateToken, (req, res, next) => {
+router.post('/', authenticateToken, async (req, res, next) => {
   try {
     const placeId = req.body.place_id || req.body.placeId;
     if (!placeId) {
       return res.status(400).json({ error: 'place_id is required' });
     }
 
-    const db = getDatabase();
     const id = generateId('fav');
-
-    db.prepare(`
-      INSERT OR IGNORE INTO favorites (id, user_id, place_id)
-      VALUES (?, ?, ?)
-    `).run(id, req.user.id, placeId);
+    await db.query(
+      `INSERT INTO favorites (id, user_id, place_id)
+       VALUES ($1, $2, $3)
+       ON CONFLICT (user_id, place_id) DO NOTHING`,
+      [id, req.user.id, placeId]
+    );
 
     res.status(201).json({ success: true, message: 'Place added to favorites' });
   } catch (err) {
@@ -48,15 +48,15 @@ router.post('/', authenticateToken, (req, res, next) => {
 });
 
 // Remove favorite place
-router.delete('/:placeId', authenticateToken, (req, res, next) => {
+router.delete('/:placeId', authenticateToken, async (req, res, next) => {
   try {
     const { placeId } = req.params;
-    const db = getDatabase();
 
-    db.prepare(`
-      DELETE FROM favorites
-      WHERE user_id = ? AND (place_id = ? OR id = ?)
-    `).run(req.user.id, placeId, placeId);
+    await db.query(
+      `DELETE FROM favorites
+       WHERE user_id = $1 AND (place_id = $2 OR id = $2)`,
+      [req.user.id, placeId]
+    );
 
     res.json({ success: true, message: 'Place removed from favorites' });
   } catch (err) {
@@ -65,4 +65,3 @@ router.delete('/:placeId', authenticateToken, (req, res, next) => {
 });
 
 export default router;
-
